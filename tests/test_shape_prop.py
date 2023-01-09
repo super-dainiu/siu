@@ -3,7 +3,7 @@ import torch
 import torchvision.models as tm
 from colossalai.fx.tracer.experimental import symbolic_trace
 
-from metacol.passes.shape_prop import shape_prop_pass
+from siu.passes.shape_prop import shape_prop_pass
 
 tm_models = [
     tm.vgg11,
