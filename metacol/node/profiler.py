@@ -3,7 +3,6 @@ func: (node) -> (saved_fwd_input, saved_fwd_buffer, saved_bwd_buffer, fwd_flops,
 """
 import torch
 
-meta_info_fn = {}
 
 def extract_meta_data(node: torch.fx.Node):
     pass

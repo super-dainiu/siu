@@ -46,7 +46,7 @@ class MetaInfo:
     
     # reference
     node: Node
-    module: Optional[GraphModule] = None
+    module: Optional[GraphModule] = None 
     
     # parameter within ``Node``
     has_param: Optional[bool] = False

@@ -2,6 +2,7 @@ from typing import Optional, Callable, List, Union, Tuple, Dict
 import torch
 
 
+
 def compute_size_in_bytes(elem: Union[torch.Tensor, Dict, List, Tuple, int]) -> int:
     """Compute the size of a tensor or a collection of tensors in bytes.
 

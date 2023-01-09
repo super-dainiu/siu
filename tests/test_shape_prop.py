@@ -2,6 +2,7 @@ import torchvision.models as tm
 import timm.models as tmm
 import torch
 
+
 from metacol.passes.shape_prop import shape_prop_pass
 from colossalai.fx.tracer.experimental import symbolic_trace
 
