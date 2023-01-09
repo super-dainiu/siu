@@ -3,7 +3,8 @@ from typing import Optional, Callable, List, Union, Tuple, Dict
 
 import torch
 
-from .utils import compute_size_in_bytes
+from ..utils import compute_size_in_bytes
+from .profiler import meta_info_fn
 
 
 def _flop2time(flop: int, tflops: float) -> float:
