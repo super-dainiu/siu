@@ -13,7 +13,7 @@ def _comm2time(comm_size: int, bandwidth: float) -> float:
     return comm_size / bandwidth
     
 def _estimate_time_with_spec(flop: int, sharding_spec: str, tflops) -> float:
-    # process sharding spec
+    # process sharding spec (TODO)
     processed_flop = flop
     return _flop2time(processed_flop, tflops)
 
