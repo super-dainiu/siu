@@ -4,9 +4,9 @@ from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 import torch
 from torch.fx import Graph, GraphModule, Node
 
-from ..envs import MeshConfig
-from ..utils import compute_size_in_bytes
-from .profiler import meta_info_fn
+from siu.envs import MeshConfig
+from siu.utils import compute_size_in_bytes
+from .ops import meta_info_fn
 
 
 def _flop2time(flop: int, tflops: float) -> float:
