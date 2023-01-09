@@ -8,16 +8,16 @@ __all__ = ['MetaTensor']
 class MetaTensor(torch.Tensor):
     """
     A wrapping tensor that hacks `torch.autograd` without patching more `torch.ops.aten` ops.
-    `fake_device` is the device that `MetaTensor` is supposed to run on.
+    `device` is the device that `MetaTensor` is supposed to run on.
     """
 
     _tensor: torch.Tensor
 
     @staticmethod
-    def __new__(cls, elem, fake_device=None):
+    def __new__(cls, elem, device=None):
         # Avoid multiple wrapping
         if isinstance(elem, MetaTensor):
-            fake_device = elem.device if fake_device is None else fake_device
+            device = elem.device if device is None else device
             elem = elem._tensor
 
         # The wrapping tensor (MetaTensor) shouldn't hold any
@@ -30,7 +30,7 @@ class MetaTensor(torch.Tensor):
             storage_offset=elem.storage_offset(),
             dtype=elem.dtype,
             layout=elem.layout,
-            device=fake_device if fake_device is not None else torch.device('cpu'),
+            device=device if device is not None else torch.device('cpu'),
             requires_grad=elem.requires_grad)    # deceive the frontend for aten selections
         r._tensor = elem
         # ...the real tensor is held as an element on the tensor.
@@ -46,15 +46,15 @@ class MetaTensor(torch.Tensor):
 
     @classmethod
     def __torch_dispatch__(cls, func, types, args=(), kwargs=None):
-        fake_device = None
+        device = None
 
         def unwrap(x):
-            nonlocal fake_device
+            nonlocal device
             if isinstance(x, MetaTensor):
-                fake_device = x.device
+                device = x.device
                 x = x._tensor
             elif isinstance(x, torch.Tensor):
-                fake_device = x.device
+                device = x.device
                 x = x.to(torch.device('meta'))
             return x
 
@@ -62,7 +62,7 @@ class MetaTensor(torch.Tensor):
         kwargs = tree_map(unwrap, kwargs)
 
         if 'device' in kwargs:
-            fake_device = kwargs['device']
+            device = kwargs['device']
             kwargs['device'] = torch.device('meta')
 
         # run aten for backend=CPU but actually on backend=Meta
@@ -72,10 +72,10 @@ class MetaTensor(torch.Tensor):
         # our custom tensor subclass
         def wrap(x):
             if isinstance(x, torch.Tensor):
-                nonlocal fake_device
+                nonlocal device
                 if not x.is_meta:
                     x = x.to(torch.device('meta'))
-            return MetaTensor(x, fake_device=fake_device) if isinstance(x, torch.Tensor) else x
+            return MetaTensor(x, device=device) if isinstance(x, torch.Tensor) else x
 
         return tree_map(wrap, out)
 
@@ -84,26 +84,26 @@ class MetaTensor(torch.Tensor):
         Returns:
             result (MetaTensor): MetaTensor
         Usage:
-            >>> tensor = MetaTensor(torch.rand(10), fake_device='cuda:100')
+            >>> tensor = MetaTensor(torch.rand(10), device='cuda:100')
             >>> tensor.to(torch.uint8)
-            MetaTensor(tensor(..., device='meta', size=(10,), dtype=torch.uint8), fake_device='cuda:100')
+            MetaTensor(tensor(..., device='meta', size=(10,), dtype=torch.uint8), device='cuda:100')
             >>> tensor.to(torch.device('cuda:42'))
-            MetaTensor(tensor(..., device='meta', size=(10,)), fake_device='cuda:42')
+            MetaTensor(tensor(..., device='meta', size=(10,)), device='cuda:42')
             >>> tensor.to('vulkan')
-            MetaTensor(tensor(..., device='meta', size=(10,)), fake_device='vulkan')
+            MetaTensor(tensor(..., device='meta', size=(10,)), device='vulkan')
         """
         # this imitates c++ function in the way of @overload
-        fake_device = None
+        device = None
 
         def replace(x):
-            nonlocal fake_device
+            nonlocal device
             if isinstance(x, str) or isinstance(x, _device):
-                fake_device = x
+                device = x
                 return 'meta'
             return x
 
         elem = self._tensor.to(*tree_map(replace, args), **tree_map(replace, kwargs))
-        return MetaTensor(elem, fake_device=fake_device)
+        return MetaTensor(elem, device=device)
 
     def cpu(self, *args, **kwargs):
         if self.device.type == 'cpu':

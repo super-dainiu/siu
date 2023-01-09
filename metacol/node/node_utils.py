@@ -1,9 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, Callable, List, Union, Tuple, Dict
+from typing import Optional, Callable, List, Union, Tuple, Dict, ClassVar
 
 import torch
+from torch.fx import Node, Graph, GraphModule
 
 from ..utils import compute_size_in_bytes
+from ..envs import MeshConfig
 from .profiler import meta_info_fn
 
 
@@ -13,7 +15,7 @@ def _flop2time(flop: int, tflops: float) -> float:
 def _comm2time(comm_size: int, bandwidth: float) -> float:
     return comm_size / bandwidth
     
-def _estimate_time_with_spec(flop: int, sharding_spec: str, tflops) -> float:
+def _estimate_time_with_spec(flop: int, tflops: float, sharding_spec: str = None) -> float:
     # process sharding spec (TODO: some-man)
     processed_flop = flop
     return _flop2time(processed_flop, tflops)
@@ -26,7 +28,7 @@ class MetaInfo:
     ============================================================================
                             -------------------------------
                             |          FX.Node            |
-    [fwd_input] are    ---> | [fwd_in]          [bwd_buf] |    <-----
+    [fwd_input] are    ---> | [fwd_inp]         [bwd_buf] |    <-----
     placeholders saved for  |     | \__________     |     |
     backward.               |     |            \    |     |
                             | [fwd_buf] ------> [bwd_buf] |    <-----
@@ -39,11 +41,15 @@ class MetaInfo:
                             -------------------------------    [fwd_input] for the next node.
     ============================================================================
     """
+    # class variable: all registered functions to trace 'meta_info'
+    _meta_info_func: ClassVar[Dict] = {}
     
     # reference
-    node: torch.fx.Node
+    node: Node
+    module: Optional[GraphModule] = None
     
     # parameter within ``Node``
+    has_param: Optional[bool] = False
     parameter: List[torch.nn.Parameter] = []
     
     # intermediate tensor as output
@@ -72,14 +78,23 @@ class MetaInfo:
     sharding_spec: str = 'RR'
     
     def __post_init__(self):
+        self.module = node.graph.owning_module()
+
+        node = self.node
+        args = [arg.meta['meta_data'] for arg in node.args]
         self.saved_fwd_input, self.saved_fwd_buffer, self.saved_bwd_buffer, \
             self.fwd_flops, self.bwd_flops, self.fwd_comm, self.bwd_comm = \
-            meta_info_fn[self.node.target](self.node)
+            MetaInfo._meta_info_func[node.target](*args)
 
     @property
-    def fwd_time(self, tflops: float = None, bandwidth: float = None):
-        return _estimate_time_with_spec(self.fwd_flop, self.sharding_spec, tflops) + _comm2time(self.fwd_comm, bandwidth)
+    def fwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
+        return _estimate_time_with_spec(self.fwd_flop, tflops, self.sharding_spec) + _comm2time(self.fwd_comm, bandwidth)
     
     @property
-    def bwd_time(self, tflops: float = None, bandwidth: float = None):
-        return _estimate_time_with_spec(self.bwd_flop, self.sharding_spec, tflops) + _comm2time(self.bwd_comm, bandwidth)
+    def bwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
+        return _estimate_time_with_spec(self.bwd_flop, tflops, self.sharding_spec) + _comm2time(self.bwd_comm, bandwidth)
+
+    @property
+    def param_size(self):
+        # TODO: specify sharding spec
+        return compute_size_in_bytes(self.parameter)
