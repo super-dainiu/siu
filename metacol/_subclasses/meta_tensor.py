@@ -2,7 +2,6 @@ import torch
 from torch.types import _bool, _device, _dtype
 from torch.utils._pytree import tree_flatten, tree_map
 
-
 __all__ = ['MetaTensor']
 
 

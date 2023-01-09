@@ -1,24 +1,27 @@
 from dataclasses import dataclass
-from typing import Optional, Callable, List, Union, Tuple, Dict, ClassVar
+from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
-from torch.fx import Node, Graph, GraphModule
+from torch.fx import Graph, GraphModule, Node
 
-from ..utils import compute_size_in_bytes
 from ..envs import MeshConfig
+from ..utils import compute_size_in_bytes
 from .profiler import meta_info_fn
 
 
 def _flop2time(flop: int, tflops: float) -> float:
     return flop / tflops
-    
+
+
 def _comm2time(comm_size: int, bandwidth: float) -> float:
     return comm_size / bandwidth
-    
+
+
 def _estimate_time_with_spec(flop: int, tflops: float, sharding_spec: str = None) -> float:
     # process sharding spec (TODO: some-man)
     processed_flop = flop
     return _flop2time(processed_flop, tflops)
+
 
 @dataclass
 class MetaInfo:
@@ -37,46 +40,46 @@ class MetaInfo:
     [x] is not counted ---> | [x]  [fwd_buf] -> [bwd_buf] |    <-----
     in [fwd_buffer] because |          |  \_____    |     |
     it is not saved for     |          |        \   |     |
-    backward.               |      [activat]     \  |     |    <----- [activation] is potentially 
+    backward.               |      [activat]     \  |     |    <----- [activation] is potentially
                             -------------------------------    [fwd_input] for the next node.
     ============================================================================
     """
     # class variable: all registered functions to trace 'meta_info'
     _meta_info_func: ClassVar[Dict] = {}
-    
+
     # reference
     node: Node
-    module: Optional[GraphModule] = None 
-    
+    module: Optional[GraphModule] = None
+
     # parameter within ``Node``
     has_param: Optional[bool] = False
     parameter: List[torch.nn.Parameter] = []
-    
+
     # intermediate tensor as output
     activation: List[torch.Tensor] = []
-    
+
     # memory allocation
     saved_fwd_input: List[torch.Tensor] = []
     saved_fwd_buffer: List[torch.Tensor] = []    # [batchnorm (mean, var), relu (output), ...]
     saved_bwd_buffer: List[torch.Tensor] = []
-    
+
     # compute cost
     fwd_flop: Optional[int] = 0
     bwd_flop: Optional[int] = 0
-    
+
     # communication cost (should be the size in bytes of communication)
     fwd_comm: Optional[int] = 0
     bwd_comm: Optional[int] = 0
-    
+
     # recompute
     to_recompute: Optional[bool] = False
-    
+
     # offload
     to_offload: Optional[bool] = False
-    
+
     # sharding spec
     sharding_spec: str = 'RR'
-    
+
     def __post_init__(self):
         self.module = node.graph.owning_module()
 
@@ -88,11 +91,13 @@ class MetaInfo:
 
     @property
     def fwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
-        return _estimate_time_with_spec(self.fwd_flop, tflops, self.sharding_spec) + _comm2time(self.fwd_comm, bandwidth)
-    
+        return _estimate_time_with_spec(self.fwd_flop, tflops, self.sharding_spec) + _comm2time(
+            self.fwd_comm, bandwidth)
+
     @property
     def bwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
-        return _estimate_time_with_spec(self.bwd_flop, tflops, self.sharding_spec) + _comm2time(self.bwd_comm, bandwidth)
+        return _estimate_time_with_spec(self.bwd_flop, tflops, self.sharding_spec) + _comm2time(
+            self.bwd_comm, bandwidth)
 
     @property
     def param_size(self):

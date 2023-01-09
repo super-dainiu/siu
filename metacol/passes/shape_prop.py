@@ -1,11 +1,12 @@
 """``torch.fx.ShapeProp``, but with ``MetaTensor``"""
 
 from typing import Any, Tuple
-from .._subclasses import MetaTensor
-
 
 import torch
 from torch.utils._pytree import tree_map
+
+from .._subclasses import MetaTensor
+
 
 class ShapeProp(torch.fx.Interpreter):
     """
@@ -29,7 +30,7 @@ class ShapeProp(torch.fx.Interpreter):
     Args:
          module (GraphModule): The module to be executed
     """
-    
+
     def run_node(self, n: torch.fx.Node) -> Any:
         """
         Run a specific node ``n`` and return the result. Attach 'meta_data' to ``n``.
@@ -47,7 +48,7 @@ class ShapeProp(torch.fx.Interpreter):
 
     def propagate(self, *args, device=None):
         """
-        Run `module` via interpretation and return the result and record the 
+        Run `module` via interpretation and return the result and record the
         shape of each node.
         Args:
             *args (Tensor): the sample input.

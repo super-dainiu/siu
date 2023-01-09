@@ -7,7 +7,6 @@ import torch
 def extract_meta_data(node: torch.fx.Node):
     pass
 
+
 def conv_meta_info(node: torch.fx.Node):
-    return {
-        "saved_fwd_input": [node.all_input_nodes]
-    }
+    return {"saved_fwd_input": [node.all_input_nodes]}

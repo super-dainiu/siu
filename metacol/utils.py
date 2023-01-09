@@ -1,6 +1,6 @@
-from typing import Optional, Callable, List, Union, Tuple, Dict
-import torch
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
+import torch
 
 
 def compute_size_in_bytes(elem: Union[torch.Tensor, Dict, List, Tuple, int]) -> int:
