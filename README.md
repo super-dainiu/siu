@@ -2,6 +2,8 @@
 
 ### Install
 ```bash
+git clone https://github.com/super-dainiu/siu.git
+cd siu
 pip install -r requirements.txt
 pip install -e .
 ```
