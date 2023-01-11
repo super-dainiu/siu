@@ -1,8 +1,20 @@
 import torch
 from torch.types import _bool, _device, _dtype
 from torch.utils._pytree import tree_flatten, tree_map
+import uuid
 
 __all__ = ['MetaTensor']
+
+aten = torch.ops.aten
+
+def _register_storage(r):
+    if isinstance(r, torch.Tensor):
+        if not r.data_ptr():
+            data_ptr = uuid.uuid1()
+            r.data_ptr = lambda: data_ptr
+
+def _assert_alias(func):
+    return func in [aten.detach.default, aten.t.default, aten.transpose.int, aten.view.default, aten._unsafe_view.default, aten._reshape_alias.default,]
 
 
 class MetaTensor(torch.Tensor):
@@ -37,6 +49,7 @@ class MetaTensor(torch.Tensor):
         if not r._tensor.is_meta:
             r._tensor = r._tensor.to(torch.device('meta'))
         # only tensor not on `meta` should be copied to `meta`
+        _register_storage(r._tensor)
         return r
 
     def __repr__(self):
@@ -66,15 +79,15 @@ class MetaTensor(torch.Tensor):
             kwargs['device'] = torch.device('meta')
 
         # run aten for backend=CPU but actually on backend=Meta
+        # here we detect whether or not the execution generates a physical copy
+        # of the input
         out = func(*args, **kwargs)
+        if _assert_alias(func):
+            out.data_ptr = args[0].data_ptr
 
         # Now, we want to continue propagating this tensor, so we rewrap Tensors in
         # our custom tensor subclass
         def wrap(x):
-            if isinstance(x, torch.Tensor):
-                nonlocal device
-                if not x.is_meta:
-                    x = x.to(torch.device('meta'))
             return MetaTensor(x, device=device) if isinstance(x, torch.Tensor) else x
 
         return tree_map(wrap, out)
@@ -114,3 +127,6 @@ class MetaTensor(torch.Tensor):
         if device is not None:
             return self.to(device=device, non_blocking=non_blocking)
         return self.to(device='cuda:0', non_blocking=non_blocking)
+
+    def data_ptr(self):
+        return self._tensor.data_ptr()

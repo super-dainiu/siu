@@ -1,3 +1,3 @@
 import colossalai.fx
 
-from .meta_tensor import MetaTensor
+from ._meta_tensor import MetaTensor

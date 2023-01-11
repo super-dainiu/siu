@@ -4,9 +4,16 @@ from typing import Any, Tuple
 
 import torch
 from torch.utils._pytree import tree_map
+import torch.fx
 
-from .._subclasses import MetaTensor
+from siu._subclasses import MetaTensor
+from siu.fx.profiler_util import MetaInfo
 
+
+def _normalize_tuple(x):
+    if not isinstance(x, tuple):
+        return (x,)
+    return x
 
 class ShapeProp(torch.fx.Interpreter):
     """
@@ -33,7 +40,7 @@ class ShapeProp(torch.fx.Interpreter):
 
     def run_node(self, n: torch.fx.Node) -> Any:
         """
-        Run a specific node ``n`` and return the result. Attach 'meta_data' to ``n``.
+        Run a specific node ``n`` and return the result. Attach 'activation' to ``n``.
 
         Args:
             n (Node): The Node to execute
@@ -41,10 +48,10 @@ class ShapeProp(torch.fx.Interpreter):
         Returns:
             Any: The result of executing ``n``
         """
-        result = super().run_node(n)
-        unwrap_fn = lambda x: x._tensor if isinstance(x, MetaTensor) else x
-        n.meta['meta_data'] = tree_map(unwrap_fn, result)
-        return result
+        r = super().run_node(n)
+        unwrap_fn = lambda elem: elem._tensor if isinstance(elem, MetaTensor) else elem
+        MetaInfo(n).activation = tree_map(unwrap_fn, _normalize_tuple(r))
+        return r
 
     def propagate(self, *args, device=None):
         """
@@ -55,7 +62,7 @@ class ShapeProp(torch.fx.Interpreter):
         Returns:
             Any: The value returned from executing the Module
         """
-        wrap_fn = lambda x: MetaTensor(x, device=device)
+        wrap_fn = lambda elem: MetaTensor(elem, device=device)
         return super().run(*tree_map(wrap_fn, args))
 
 

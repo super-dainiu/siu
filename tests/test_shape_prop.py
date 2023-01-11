@@ -3,7 +3,7 @@ import torch
 import torchvision.models as tm
 from colossalai.fx.tracer.experimental import symbolic_trace
 
-from siu.passes.shape_prop import shape_prop_pass
+from siu.fx.passes.shape_prop import shape_prop_pass
 
 tm_models = [
     tm.vgg11,
@@ -33,7 +33,7 @@ tmm_models = [
 
 def _check_gm_validity(gm: torch.fx.GraphModule):
     for node in gm.graph.nodes:
-        assert 'meta_data' in node.meta, f'meta_data not found in {node}'
+        assert node.meta['info'].activation, f'{node} has no activation.'
 
 
 def test_torchvision_shape_prop():

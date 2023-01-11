@@ -1,26 +1,27 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import warnings
 from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch.fx import Graph, GraphModule, Node
+from torch.autograd.profiler_util import _format_memory, _format_time
 
 from siu.envs import MeshConfig
 from siu.utils import compute_size_in_bytes
-from .ops import meta_info_fn
 
 
-def _flop2time(flop: int, tflops: float) -> float:
+def _flop_to_time(flop: int, tflops: float) -> float:
     return flop / tflops
 
 
-def _comm2time(comm_size: int, bandwidth: float) -> float:
+def _comm_to_time(comm_size: int, bandwidth: float) -> float:
     return comm_size / bandwidth
 
 
 def _estimate_time_with_spec(flop: int, tflops: float, sharding_spec: str = None) -> float:
     # process sharding spec (TODO: some-man)
     processed_flop = flop
-    return _flop2time(processed_flop, tflops)
+    return _flop_to_time(processed_flop, tflops)
 
 
 @dataclass
@@ -44,24 +45,22 @@ class MetaInfo:
                             -------------------------------    [fwd_input] for the next node.
     ============================================================================
     """
-    # class variable: all registered functions to trace 'meta_info'
-    _meta_info_func: ClassVar[Dict] = {}
 
     # reference
     node: Node
-    module: Optional[GraphModule] = None
 
+    # should be updated after each graph manipulation
+    # ============================== Update ====================================
     # parameter within ``Node``
-    has_param: Optional[bool] = False
-    parameter: List[torch.nn.Parameter] = []
+    parameter: Tuple[torch.nn.Parameter] = ()
 
     # intermediate tensor as output
-    activation: List[torch.Tensor] = []
+    activation: Tuple[torch.Tensor] = ()
 
     # memory allocation
-    saved_fwd_input: List[torch.Tensor] = []
-    saved_fwd_buffer: List[torch.Tensor] = []    # [batchnorm (mean, var), relu (output), ...]
-    saved_bwd_buffer: List[torch.Tensor] = []
+    saved_fwd_input: Tuple[torch.Tensor] = ()
+    saved_fwd_buffer: Tuple[torch.Tensor] = ()   # [batchnorm (mean, var), relu (output), ...]
+    saved_bwd_buffer: Tuple[torch.Tensor] = ()
 
     # compute cost
     fwd_flop: Optional[int] = 0
@@ -71,35 +70,48 @@ class MetaInfo:
     fwd_comm: Optional[int] = 0
     bwd_comm: Optional[int] = 0
 
-    # recompute
-    to_recompute: Optional[bool] = False
-
-    # offload
+    # should keep the same whenever manipulated
+    # ============================= Invariant ==================================
+    to_recompute: Tuple[torch.Tensor] = ()  # (region_0, region_1, ...) support nested codegen
     to_offload: Optional[bool] = False
-
-    # sharding spec
     sharding_spec: str = 'RR'
 
-    def __post_init__(self):
-        self.module = node.graph.owning_module()
+    def __new__(self, node: Node, **kwargs):
+        if node.meta.get('info', None) is not None:
+            return node.meta['info']
+        return super().__new__(self)
 
-        node = self.node
-        args = [arg.meta['meta_data'] for arg in node.args]
-        self.saved_fwd_input, self.saved_fwd_buffer, self.saved_bwd_buffer, \
-            self.fwd_flops, self.bwd_flops, self.fwd_comm, self.bwd_comm = \
-            MetaInfo._meta_info_func[node.target](*args)
+    def __post_init__(self):
+        self.node.meta['info'] = self
 
     @property
     def fwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
-        return _estimate_time_with_spec(self.fwd_flop, tflops, self.sharding_spec) + _comm2time(
+        return _estimate_time_with_spec(self.fwd_flop, tflops, self.sharding_spec) + _comm_to_time(
             self.fwd_comm, bandwidth)
 
     @property
     def bwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
-        return _estimate_time_with_spec(self.bwd_flop, tflops, self.sharding_spec) + _comm2time(
+        return _estimate_time_with_spec(self.bwd_flop, tflops, self.sharding_spec) + _comm_to_time(
             self.bwd_comm, bandwidth)
 
     @property
     def param_size(self):
         # TODO: specify sharding spec
         return compute_size_in_bytes(self.parameter)
+
+    @property
+    def activ_size(self):
+        return compute_size_in_bytes(self.activation)
+
+    def __repr__(self):
+        s = f'Node {self.node.name}'
+        if self.parameter:
+            s += f'\n has parameter of size {_format_memory(self.param_size)}'
+        if self.activation:
+            s += f'\n activation {_format_memory(self.activ_size)}'
+        s += f'\n to_recompute {self.to_recompute}'\
+            f'\n to_offload {self.to_offload}'\
+                f'\n sharding_spec {self.sharding_spec}'
+        return s
+        
+
