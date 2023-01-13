@@ -92,7 +92,7 @@ class ShapeProp(torch.fx.Interpreter):
 
     def call_function(self, target: 'Target', args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> Any:
         if target in self._custom_dispatch_func:
-            return self._custom_dispatch_func[target](self, args, kwargs)
+            return self._custom_dispatch_func[target](*args, **kwargs)
         return super().call_function(target, args, kwargs)
 
     def propagate(self, *args, device=None):

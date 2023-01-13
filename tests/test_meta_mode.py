@@ -14,7 +14,6 @@ def test_meta_mode():
     for m in tm_models + tmm_models:
         with MetaTensorMode():
             model = m()
-            print(m.__name__)
             loss(model(torch.rand(2, 3, 224, 224))).backward()
 
 
