@@ -1,3 +1,4 @@
-import colossalai.fx
+from ._monkey_patch import *
+from ._meta_registration import *
 
-from ._meta_tensor import MetaTensor
+from .meta_tensor import MetaTensor, MetaTensorMode

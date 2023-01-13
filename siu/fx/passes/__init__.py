@@ -1,1 +1,1 @@
-from .shape_prop import ShapeProp
+from .shape_prop import ShapeProp, register_shape_impl

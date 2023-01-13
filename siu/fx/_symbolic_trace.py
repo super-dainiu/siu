@@ -9,7 +9,7 @@ import torch
 from torch.fx import Graph, Node, Proxy, Tracer
 from torch.utils._pytree import tree_map
 
-from siu._subclasses import MetaTensor
+from siu._subclasses import MetaTensor, _TorchFactoryMethod, _TensorPropertyMethod
 from .profiler_util import MetaInfo
 from colossalai.fx import ColoGraphModule
 
@@ -19,13 +19,6 @@ Argument = Optional[Union[Tuple[Any, ...],    # actually Argument, but mypy can'
                           Dict[str, Any],    # actually Argument
                           slice,    # Slice[Argument, Argument, Argument], but slice is not a templated type in typing
                           'Node',]]
-_CScriptMethod = ['add', 'mul', 'sub', 'div']
-_TorchNewMethod = [
-    "arange", "zeros", "zeros_like", "ones", "ones_like", "full", "full_like", "empty", "empty_like", "eye", "tensor",
-    "finfo"
-]
-_TensorPropertyMethod = ["dtype", "shape", "device", "requires_grad", "grad", "grad_fn", "data"]
-
 
 def _truncate_suffix(s: str):
     import re
@@ -404,7 +397,7 @@ class _TorchTensorOverride(object):
 
         self.overrides = {
             target: wrap_tensor_method(getattr(torch, target))
-            for target in _TorchNewMethod
+            for target in _TorchFactoryMethod
             if callable(getattr(torch, target))
         }
         for name, (wrapper, orig) in self.overrides.items():

@@ -9,21 +9,6 @@ from torch.autograd.profiler_util import _format_memory, _format_time
 from siu.envs import MeshConfig
 from siu.utils import compute_size_in_bytes
 
-
-def _flop_to_time(flop: int, tflops: float) -> float:
-    return flop / tflops
-
-
-def _comm_to_time(comm_size: int, bandwidth: float) -> float:
-    return comm_size / bandwidth
-
-
-def _estimate_time_with_spec(flop: int, tflops: float, sharding_spec: str = None) -> float:
-    # process sharding spec (TODO: some-man)
-    processed_flop = flop
-    return _flop_to_time(processed_flop, tflops)
-
-
 @dataclass
 class MetaInfo:
     r"""
@@ -51,11 +36,12 @@ class MetaInfo:
 
     # should be updated after each graph manipulation
     # ============================== Update ====================================
-    # parameter within ``Node``
-    parameter: Tuple[torch.nn.Parameter] = ()
+    # parameter and buffer within ``Node``
+    parameters: Dict[str, torch.nn.Parameter] = field(default_factory=dict)
+    buffers: Dict[str, torch.Tensor] = field(default_factory=dict)
 
     # intermediate tensor as output
-    activation: Tuple[torch.Tensor] = ()
+    data: Tuple[torch.Tensor] = ()
 
     # memory allocation
     saved_fwd_input: Tuple[torch.Tensor] = ()
@@ -86,32 +72,35 @@ class MetaInfo:
 
     @property
     def fwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
-        return _estimate_time_with_spec(self.fwd_flop, tflops, self.sharding_spec) + _comm_to_time(
-            self.fwd_comm, bandwidth)
+        return self.fwd_flop / tflops + self.fwd_comm / bandwidth
 
     @property
     def bwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
-        return _estimate_time_with_spec(self.bwd_flop, tflops, self.sharding_spec) + _comm_to_time(
-            self.bwd_comm, bandwidth)
+        return self.bwd_flop / tflops + self.bwd_comm / bandwidth
 
     @property
     def param_size(self):
-        # TODO: specify sharding spec
-        return compute_size_in_bytes(self.parameter)
+        return compute_size_in_bytes(self.parameters)
 
     @property
-    def activ_size(self):
-        return compute_size_in_bytes(self.activation)
+    def buffer_size(self):
+        return compute_size_in_bytes(self.buffers)
+
+    @property
+    def size(self):
+        return compute_size_in_bytes(self.data)
 
     def __repr__(self):
         s = f'Node {self.node.name}'
-        if self.parameter:
+        if self.parameters:
             s += f'\n has parameter of size {_format_memory(self.param_size)}'
-        if self.activation:
-            s += f'\n activation {_format_memory(self.activ_size)}'
-        s += f'\n to_recompute {self.to_recompute}'\
-            f'\n to_offload {self.to_offload}'\
-                f'\n sharding_spec {self.sharding_spec}'
+        if self.buffers:
+            s += f'\n has buffer of size {_format_memory(self.buffer_size)}'
+        if self.data:
+            s += f'\n has activation of size {_format_memory(self.size)}'
+        s += f'\n to_recompute = {self.to_recompute}'\
+            f'\n to_offload = {self.to_offload}'\
+            f'\n sharding_spec = {self.sharding_spec}'
         return s
         
 

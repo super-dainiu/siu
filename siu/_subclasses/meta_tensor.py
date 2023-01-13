@@ -1,26 +1,37 @@
+from functools import partial
 import torch
+import torch.distributed
 from torch.types import _bool, _device, _dtype
 from torch.utils._pytree import tree_flatten, tree_map
 import uuid
 
-__all__ = ['MetaTensor']
+from ._monkey_patch import _AliasATen, _InplaceATen, _DistCommMethod, _TorchOverrideableFactoryMethod
+from ._meta_registration import new
 
-aten = torch.ops.aten
+__all__ = ['MetaTensor', 'MetaTensorMode']
 
-def _register_storage(r):
+def register_storage(r):
     if isinstance(r, torch.Tensor):
         if not r.data_ptr():
             data_ptr = uuid.uuid1()
             r.data_ptr = lambda: data_ptr
 
+# a hack of inplace execution in PyTorch
 def _assert_alias(func):
-    return func in [aten.detach.default, aten.t.default, aten.transpose.int, aten.view.default, aten._unsafe_view.default, aten._reshape_alias.default,]
+    return func in _AliasATen + _InplaceATen
 
 
 class MetaTensor(torch.Tensor):
     """
-    A wrapping tensor that hacks `torch.autograd` without patching more `torch.ops.aten` ops.
-    `device` is the device that `MetaTensor` is supposed to run on.
+    A wrapping tensor that hacks ``torch.autograd`` without patching more ``torch.ops.aten`` ops.
+    `device` is the device that ``MetaTensor`` is supposed to run on. Meta tensors give you the 
+    ability to run PyTorch code without having to actually do computation through tensors 
+    allocated on a `meta` device. Because the device is `meta`, meta tensors do not model 
+    device propagation. ``MetaTensor`` extends its usage by carrying an additional `fake_device`
+    which tracks devices that would have been used.
+
+    Reference:
+        https://github.com/pytorch/pytorch/blob/master/torch/_subclasses/fake_tensor.py
     """
 
     _tensor: torch.Tensor
@@ -49,7 +60,7 @@ class MetaTensor(torch.Tensor):
         if not r._tensor.is_meta:
             r._tensor = r._tensor.to(torch.device('meta'))
         # only tensor not on `meta` should be copied to `meta`
-        _register_storage(r._tensor)
+        register_storage(r._tensor)
         return r
 
     def __repr__(self):
@@ -130,3 +141,42 @@ class MetaTensor(torch.Tensor):
 
     def data_ptr(self):
         return self._tensor.data_ptr()
+
+
+class MetaTensorMode(object):
+    """
+    A context manager that enables MetaTensor mode. 
+
+    Usage:
+        >>> with MetaTensorMode():
+        >>>     # all torch.xxx and torch.distributed.xxx will be replaced by patched functions
+        >>>     # and the actual execution will be on torch.device('meta')
+        >>>     a = torch.rand(100000, 100000)
+        >>>     b = torch.rand(100000, 100000)
+        >>>     c = torch.mm(a, b)
+    """
+    def __init__(self):
+        self.torch_overrides = {}   # override torch.xxx
+        self.dist_overrides = {}    # override torch.distributed.xxx
+
+    def __enter__(self):
+        def _dummy(*args, **kwargs):
+            pass
+
+        def _new(*args, orig_new=torch.empty, **kwargs):
+            return MetaTensor(orig_new(*args, **{**kwargs, 'device': 'meta'}), device=kwargs.get('device', torch.device('cpu')))
+
+        for func in _TorchOverrideableFactoryMethod:
+            self.torch_overrides[func] = getattr(torch, func)
+            setattr(torch, func, partial(_new, orig_new=getattr(torch, func)))
+
+        for func in _DistCommMethod:
+            self.dist_overrides[func] = getattr(torch.distributed, func)
+            setattr(torch.distributed, func, _dummy)
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        for func, func_impl in self.torch_overrides.items():
+            setattr(torch, func, func_impl)
+
+        for func, func_impl in self.dist_overrides.items():
+            setattr(torch.distributed, func, func_impl)
