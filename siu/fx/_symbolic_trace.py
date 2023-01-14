@@ -10,8 +10,8 @@ from torch.fx import Graph, Node, Proxy, Tracer
 from torch.utils._pytree import tree_map
 
 from siu._subclasses import MetaTensor, _TorchFactoryMethod, _TensorPropertyMethod
-from .profiler_util import MetaInfo
-from colossalai.fx import ColoGraphModule
+from .node_util import MetaInfo
+from .graph_module import ColoGraphModule
 
 Target = Union[Callable[..., Any], str]
 Argument = Optional[Union[Tuple[Any, ...],    # actually Argument, but mypy can't represent recursive types

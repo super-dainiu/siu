@@ -7,7 +7,7 @@ from torch.utils._pytree import tree_map
 import torch.fx
 
 from siu._subclasses import MetaTensor, MetaTensorMode
-from siu.fx.profiler_util import MetaInfo
+from siu.fx.node_util import MetaInfo
 
 Target = Union[Callable[..., Any], str]
 

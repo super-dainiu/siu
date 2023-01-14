@@ -62,14 +62,17 @@ class MetaInfo:
     to_offload: Optional[bool] = False
     sharding_spec: str = 'RR'
 
-    def __new__(self, node: Node, **kwargs):
+    def __new__(cls, node: Node, **kwargs):
         if node.meta.get('info', None) is not None:
+            def _dummy(*args, **kwargs):
+                pass
+            cls.__init__ = _dummy
             return node.meta['info']
-        return super().__new__(self)
-
+        return super().__new__(cls)
+    
     def __post_init__(self):
         self.node.meta['info'] = self
-
+    
     @property
     def fwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
         return self.fwd_flop / tflops + self.fwd_comm / bandwidth
