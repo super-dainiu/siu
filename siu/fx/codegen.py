@@ -78,6 +78,54 @@ def _find_input_and_output_nodes(nodes: List[Node]):
     return input_nodes, output_nodes
 
 
+def _find_nested_ckpt_regions(node_list: List[Node], ckpt_level: int = 0):
+    """
+    Find the nested checkpoint regions given a list of consecutive nodes. The outputs
+    will be list of tuples, each tuple is in the form of (start_index, end_index).
+    """
+    ckpt_regions = []
+    start = -1
+    end = -1
+    current_region = None
+
+    for idx, node in enumerate(node_list):
+        if len(node.meta['info'].to_recompute) > ckpt_level:
+            act_ckpt_label = node.meta['info'].to_recompute[ckpt_level]
+
+            # this activation checkpoint label is not set yet
+            # meaning this is the first node of the activation ckpt region
+            if current_region is None:
+                current_region = act_ckpt_label
+                start = idx
+
+            # if activation checkpoint has changed
+            # we restart the tracking
+            # e.g. node ckpt states = [ckpt1, ckpt2, ckpt2, ckpt2]
+            if act_ckpt_label != current_region:
+                assert start != -1
+                ckpt_regions.append((start, idx - 1))
+                current_region = act_ckpt_label
+                start = idx
+                end = -1
+
+        elif current_region is not None and _end_of_ckpt(node, ckpt_level):
+            # used to check the case below
+            # node ckpt states = [ckpt, ckpt, non-ckpt]
+            end = idx - 1
+            assert start != -1 and end != -1
+            ckpt_regions.append((start, end))
+            start = end = -1
+            current_region = None
+
+        else:
+            pass
+
+    if current_region is not None:
+        end = len(node_list) - 1
+        ckpt_regions.append((start, end))
+    return ckpt_regions
+
+
 def emit_ckpt_func(body,
                    ckpt_func,
                    node_list: List[Node],
@@ -149,54 +197,6 @@ def emit_ckpt_func(body,
     if in_ckpt:
         usage = '    ' + usage
     body.append(usage)
-
-
-def _find_nested_ckpt_regions(node_list: List[Node], ckpt_level: int = 0):
-    """
-    Find the nested checkpoint regions given a list of consecutive nodes. The outputs
-    will be list of tuples, each tuple is in the form of (start_index, end_index).
-    """
-    ckpt_regions = []
-    start = -1
-    end = -1
-    current_region = None
-
-    for idx, node in enumerate(node_list):
-        if len(node.meta['info'].to_recompute) > ckpt_level:
-            act_ckpt_label = node.meta['info'].to_recompute[ckpt_level]
-
-            # this activation checkpoint label is not set yet
-            # meaning this is the first node of the activation ckpt region
-            if current_region is None:
-                current_region = act_ckpt_label
-                start = idx
-
-            # if activation checkpoint has changed
-            # we restart the tracking
-            # e.g. node ckpt states = [ckpt1, ckpt2, ckpt2, ckpt2]
-            if act_ckpt_label != current_region:
-                assert start != -1
-                ckpt_regions.append((start, idx - 1))
-                current_region = act_ckpt_label
-                start = idx
-                end = -1
-
-        elif current_region is not None and _end_of_ckpt(node, ckpt_level):
-            # used to check the case below
-            # node ckpt states = [ckpt, ckpt, non-ckpt]
-            end = idx - 1
-            assert start != -1 and end != -1
-            ckpt_regions.append((start, end))
-            start = end = -1
-            current_region = None
-
-        else:
-            pass
-
-    if current_region is not None:
-        end = len(node_list) - 1
-        ckpt_regions.append((start, end))
-    return ckpt_regions
 
 
 def emit_code_with_activation_checkpoint(body, ckpt_func, nodes, emit_node_func, delete_unused_value_func):
