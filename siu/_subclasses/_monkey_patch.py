@@ -3,10 +3,13 @@ import torch.distributed as dist
 
 aten = torch.ops.aten
 
-__all__ = ["_TorchFactoryMethod", "_TorchOverrideableFactoryMethod", "_TorchNonOverrideableFactoryMethod", "_TensorPropertyMethod", "_DistCommMethod", "_AliasATen", "_InplaceATen"]
+__all__ = [
+    "_TorchFactoryMethod", "_TorchOverrideableFactoryMethod", "_TorchNonOverrideableFactoryMethod",
+    "_TensorPropertyMethod", "_DistCommMethod", "_AliasATen", "_InplaceATen"
+]
 
 _TorchOverrideableFactoryMethod = [
-    "empty", 
+    "empty",
     "eye",
     "full",
     "ones",
@@ -27,15 +30,7 @@ _TorchNonOverrideableFactoryMethod = [
 
 _TorchFactoryMethod = _TorchOverrideableFactoryMethod + _TorchNonOverrideableFactoryMethod
 
-_TensorPropertyMethod = [
-    "dtype", 
-    "shape", 
-    "device", 
-    "requires_grad", 
-    "grad", 
-    "grad_fn", 
-    "data"
-]
+_TensorPropertyMethod = ["dtype", "shape", "device", "requires_grad", "grad", "grad_fn", "data"]
 
 _DistCommMethod = [
     "all_gather",
@@ -49,11 +44,11 @@ _DistCommMethod = [
 ]
 
 _AliasATen = [
-    aten.detach.default, 
-    aten.t.default, 
-    aten.transpose.int, 
-    aten.view.default, 
-    aten._unsafe_view.default, 
+    aten.detach.default,
+    aten.t.default,
+    aten.transpose.int,
+    aten.view.default,
+    aten._unsafe_view.default,
     aten._reshape_alias.default,
 ]
 
