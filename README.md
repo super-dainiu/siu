@@ -5,7 +5,7 @@ This repo is somehow the minimal implementation of Colossal-AI FX. Features incl
 - Robust Control-flow Tracing / Recompile
 - Robust Activation Checkpoint Tracing / CodeGen
 - Support ``MetaTensorMode``
-- Shape Inference Accross Device and Unified ``MetaInfo``
+- Shape Inference Across Device and Unified ``MetaInfo``
 - (TODO) Minimal Bias-Addition Split
 - (TODO) Minimal Profiling for Solvers
 
