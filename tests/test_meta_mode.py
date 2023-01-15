@@ -6,7 +6,7 @@ import torch.distributed as dist
 
 from siu._subclasses import MetaTensor, MetaTensorMode
 
-from model_list import tm_models, tmm_models
+from zoo import tm_models, tmm_models
 
 
 def test_meta_mode():

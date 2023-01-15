@@ -13,16 +13,36 @@ from torch.nn.modules.module import _addindent
 from .codegen import ActivationCheckpointCodeGen
 
 class ColoGraphModule(torch.fx.GraphModule):
+    """
+    ColoGraphGraphModule is an nn.Module generated from an fx.Graph. 
+    ColoGraphmodule has a ``graph`` attribute, as well as ``code`` and ``forward`` 
+    attributes generated from that ``graph``.
+
+    The difference between ``ColoGraphModule`` and ``torch.fx.GraphModule`` is that
+    ``ColoGraphModule`` has a ``bind()`` function to bind customized functions 
+    (i.e. activation checkpoint) to ``code`` of ``nn.Module``. If you want to use
+    specific features in Colossal-AI that are not supported by ``torch.fx.GraphModule``, 
+    you can use ``ColoGraphModule`` instead.
+
+    ``colossalai.fx.symbolic_trace()`` will return a ``ColoGraphModule`` as default.
+
+    .. warning::
+
+        When ``graph`` is reassigned, ``code`` and ``forward`` will be automatically
+        regenerated. However, if you edit the contents of the ``graph`` without reassigning
+        the ``graph`` attribute itself, you must call ``recompile()`` to update the generated
+        code.
+    """
 
     def __init__(self, root: Union[torch.nn.Module, Dict[str, Any]], graph: torch.fx.Graph, class_name: str = 'GraphModule'):
         graph.set_codegen(ActivationCheckpointCodeGen())
         super().__init__(root, graph, class_name)
 
     def bind(self, ckpt_def, globals):
-        """Bind function needed for correctly execute gm forward
+        """Bind function needed for correctly execute ``GraphModule.forward()``
 
-        We need to bind checkpoint functions and saved_tensor_hooks functions
-        to gm so that we could correctly execute gm forward
+        We need to bind checkpoint functions to ``ColoGraphModule`` so that we could 
+        correctly execute ``GraphModule.forward()``
 
         Args:
             ckpt_def (List[str]): definition before the forward function

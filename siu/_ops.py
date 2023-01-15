@@ -1,3 +1,5 @@
+"""Depreciated"""
+
 from siu.fx.passes.shape_prop import register_shape_impl
 from siu._subclasses import MetaTensor
 import torch

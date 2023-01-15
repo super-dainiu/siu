@@ -17,6 +17,8 @@ def _normalize_tuple(x):
         return (x,)
     return x
 
+def _current_device(module):
+    return next(module.parameters()).device
 
 def register_shape_impl(func):
     def wrapper(impl):
@@ -31,18 +33,11 @@ class ShapeProp(torch.fx.Interpreter):
     into the corresponding node.
 
     Usage:
-        BATCH_SIZE = 2
-        DIM_IN = 4
-        DIM_HIDDEN = 16
-        DIM_OUT = 16
-        model = torch.nn.Sequential(
-            torch.nn.Linear(DIM_IN, DIM_HIDDEN),
-            torch.nn.Linear(DIM_HIDDEN, DIM_OUT),
-            )
-        input_sample = torch.rand(BATCH_SIZE, DIM_IN)
-        gm = colossalai.fx.symbolic_trace(model)
-        interp = ShapeProp(gm)
-        interp.propagate(input_sample)
+        >>> model = MyModule()
+        >>> x = torch.rand(10, 10)
+        >>> gm = colossalai.fx.symbolic_trace(model, meta_args = {'x': x}})
+        >>> interp = ShapeProp(gm)
+        >>> interp.propagate(x)
 
     Args:
         module (GraphModule): The module to be executed
@@ -77,14 +72,25 @@ class ShapeProp(torch.fx.Interpreter):
         Returns:
             Any: The result of executing ``n``
         """
-        r = super().run_node(n)
+        args, kwargs = self.fetch_args_kwargs_from_env(n)
+        r = getattr(self, n.op)(n.target, args, kwargs)
+
         unwrap_fn = lambda elem: elem._tensor if isinstance(elem, MetaTensor) else elem
         n_info = MetaInfo(n)
         n_info.data = tree_map(unwrap_fn, _normalize_tuple(r))
+
         if n.op == 'call_module':
             submod = self.fetch_attr(n.target)
-            n_info.parameters = {k: v.to(torch.device('meta')) for k, v in submod.named_parameters()}
-            n_info.buffers = {k: v.to(torch.device('meta')) for k, v in submod.named_buffers()}
+            n_info.parameters.update({k: v.to(torch.device('meta')) for k, v in submod.named_parameters()})
+            n_info.buffers.update({k: v.to(torch.device('meta')) for k, v in submod.named_buffers()})
+        else:
+            # fix-me: ``nn.Parameter`` cannot be ``kwargs``?
+            n_info.parameters.update(
+                {k.name: v.to(torch.device('meta')) \
+                    for k, v in zip(n.args, args) \
+                        if isinstance(k, torch.fx.Node) and isinstance(v, torch.nn.Parameter)
+                }
+            )
 
         # TODO(you): Remove this once SPMD Solver is refactored.
         n._meta_data = tree_map(unwrap_fn, _normalize_tuple(r))
@@ -109,6 +115,6 @@ class ShapeProp(torch.fx.Interpreter):
             return super().run(*tree_map(wrap_fn, args))
 
 
-def shape_prop_pass(gm: torch.fx.GraphModule, *args, device=None):
-    ShapeProp(gm).propagate(*args, device=device)
-    return gm
+def shape_prop_pass(module: torch.fx.GraphModule, *args):
+    ShapeProp(module).propagate(*args, device=_current_device(module))
+    return module

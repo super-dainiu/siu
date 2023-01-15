@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-import warnings
 from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -7,7 +6,6 @@ from torch.fx import Graph, GraphModule, Node
 from torch.autograd.profiler_util import _format_memory, _format_time
 
 from siu.envs import MeshConfig
-from siu.utils import compute_size_in_bytes
 
 @dataclass
 class MetaInfo:
@@ -29,6 +27,15 @@ class MetaInfo:
     backward.               |      [activat]     \  |     |    <----- [activation] is potentially
                             -------------------------------    [fwd_input] for the next node.
     ============================================================================
+
+    Usage:
+        >>> for node in graph.nodes:
+        >>>     n_info = MetaInfo(node)     # will create a new MetaInfo instance and store in node.meta['info'] 
+        >>>                                 # if not exist, otherwise return the existing one
+        >>>     n_info.data = ...   # set the data field
+
+    Remarks:
+        This feature is experimental and all the entries are subject to change.
     """
 
     # reference
@@ -105,5 +112,27 @@ class MetaInfo:
             f'\n to_offload = {self.to_offload}'\
             f'\n sharding_spec = {self.sharding_spec}'
         return s
-        
+    
 
+def compute_size_in_bytes(elem: Union[torch.Tensor, Dict, List, Tuple, int]) -> int:
+    """Compute the size of a tensor or a collection of tensors in bytes.
+
+    Args:
+        elem (Union[torch.Tensor, Dict, List, Tuple, int]): Arbitrary nested ``torch.Tensor`` data structure.
+
+    Returns:
+        int: The size of the tensor or the collection of tensors in bytes.
+    """
+    nbytes = 0
+    if isinstance(elem, torch.Tensor):
+        if elem.is_quantized:
+            nbytes += elem.numel() * torch._empty_affine_quantized([], dtype=elem.dtype).element_size()
+        else:
+            nbytes += elem.numel() * torch.tensor([], dtype=elem.dtype).element_size()
+    elif isinstance(elem, dict):
+        value_list = [v for _, v in elem.items()]
+        nbytes += compute_size_in_bytes(value_list)
+    elif isinstance(elem, tuple) or isinstance(elem, list) or isinstance(elem, set):
+        for e in elem:
+            nbytes += compute_size_in_bytes(e)
+    return nbytes

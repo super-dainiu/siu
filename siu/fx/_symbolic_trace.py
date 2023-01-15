@@ -1,4 +1,3 @@
-import enum
 import functools
 import inspect
 import operator
@@ -25,15 +24,12 @@ def _truncate_suffix(s: str):
     return re.sub(r'_\d+$', '', s)
 
 
-def _normalize_tuple(x):
-    if not isinstance(x, tuple):
-        return (x,)
-    return x
-
-
 def _default_device():
     return torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
+
+def _current_device(module):
+    return next(module.parameters()).device
 
 class ColoProxy(Proxy):
 
@@ -261,30 +257,24 @@ class ColoTracer(Tracer):
     @contextmanager
     def trace_activation_checkpoint(self, enabled: bool):
         if enabled:
-            orig_ckpt_func = torch.utils.checkpoint.CheckpointFunction
+            orig_ckpt_func_apply = torch.utils.checkpoint.CheckpointFunction.apply
+            orig_ckpt_func_without_reentrant = torch.utils.checkpoint._checkpoint_without_reentrant
 
-            class PatchedCheckpointFunction(torch.autograd.Function):
-
-                @staticmethod
-                def forward(ctx, run_function, preserve_rng_state, *args):
-                    # signal that the current tracing occurs within activaton checkpoint part
-                    self.ckpt_regions.append(self.ckpt_idx)
-                    out = run_function(*args)
-                    self.ckpt_idx = self.ckpt_regions.pop(-1) + 1
-                    return out
-
-                @staticmethod
-                def backward(ctx: Any, *grad_outputs: Any) -> Any:
-                    raise NotImplementedError(
-                        "We do not implement the backward pass as we only trace the forward pass.")
+            def checkpoint(run_function, preserve_rng_state=False, *args):
+                self.ckpt_regions.append(self.ckpt_idx)
+                out = run_function(*args)
+                self.ckpt_idx = self.ckpt_regions.pop(-1) + 1
+                return out
 
             # override the checkpoint function
-            torch.utils.checkpoint.CheckpointFunction = PatchedCheckpointFunction
+            torch.utils.checkpoint.CheckpointFunction.apply = checkpoint
+            torch.utils.checkpoint._checkpoint_without_reentrant = checkpoint
         yield
 
         if enabled:
             # recover the checkpoint function upon exit
-            torch.utils.checkpoint.CheckpointFunction = orig_ckpt_func
+            torch.utils.checkpoint.CheckpointFunction.apply = orig_ckpt_func_apply
+            torch.utils.checkpoint._checkpoint_reentrant = orig_ckpt_func_without_reentrant
 
     def _post_check(self, non_concrete_arg_names: Set[str]):
         # This is necessary because concrete args are added as input to the traced module since
@@ -356,11 +346,12 @@ def symbolic_trace(
     trace_act_ckpt=False,
 ) -> ColoGraphModule:
     if meta_args:
-        device = _default_device()
+        device, orig_device = _default_device(), _current_device(root)
         wrap_fn = lambda elem: MetaTensor(elem, device=device) if isinstance(elem, torch.Tensor) else elem
         graph = ColoTracer(trace_act_ckpt=trace_act_ckpt).trace(root.to(device),
                                                                 concrete_args=concrete_args,
                                                                 meta_args=tree_map(wrap_fn, meta_args))
+        root.to(orig_device)
     else:
         graph = Tracer().trace(root, concrete_args=concrete_args)
     name = root.__class__.__name__ if isinstance(root, torch.nn.Module) else root.__name__
