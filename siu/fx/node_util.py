@@ -2,10 +2,11 @@ from dataclasses import dataclass, field
 from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
-from torch.fx import Graph, GraphModule, Node
 from torch.autograd.profiler_util import _format_memory, _format_time
+from torch.fx import Graph, GraphModule, Node
 
 from siu.envs import MeshConfig
+
 
 @dataclass
 class MetaInfo:
@@ -30,7 +31,7 @@ class MetaInfo:
 
     Usage:
         >>> for node in graph.nodes:
-        >>>     n_info = MetaInfo(node)     # will create a new MetaInfo instance and store in node.meta['info'] 
+        >>>     n_info = MetaInfo(node)     # will create a new MetaInfo instance and store in node.meta['info']
         >>>                                 # if not exist, otherwise return the existing one
         >>>     n_info.data = ...   # set the data field
 
@@ -52,7 +53,7 @@ class MetaInfo:
 
     # memory allocation
     saved_fwd_input: Tuple[torch.Tensor] = ()
-    saved_fwd_buffer: Tuple[torch.Tensor] = ()   # [batchnorm (mean, var), relu (output), ...]
+    saved_fwd_buffer: Tuple[torch.Tensor] = ()    # [batchnorm (mean, var), relu (output), ...]
     saved_bwd_buffer: Tuple[torch.Tensor] = ()
 
     # compute cost
@@ -65,21 +66,23 @@ class MetaInfo:
 
     # should keep the same whenever manipulated
     # ============================= Invariant ==================================
-    to_recompute: Tuple[torch.Tensor] = ()  # (region_0, region_1, ...) support nested codegen
+    to_recompute: Tuple[torch.Tensor] = ()    # (region_0, region_1, ...) support nested codegen
     to_offload: Optional[bool] = False
     sharding_spec: str = 'RR'
 
     def __new__(cls, node: Node, **kwargs):
         if node.meta.get('info', None) is not None:
+
             def _dummy(*args, **kwargs):
                 pass
+
             cls.__init__ = _dummy
             return node.meta['info']
         return super().__new__(cls)
-    
+
     def __post_init__(self):
         self.node.meta['info'] = self
-    
+
     @property
     def fwd_time(self, tflops: float = MeshConfig.TFLOPS, bandwidth: float = MeshConfig.BANDWIDTH):
         return self.fwd_flop / tflops + self.fwd_comm / bandwidth
@@ -112,7 +115,7 @@ class MetaInfo:
             f'\n to_offload = {self.to_offload}'\
             f'\n sharding_spec = {self.sharding_spec}'
         return s
-    
+
 
 def compute_size_in_bytes(elem: Union[torch.Tensor, Dict, List, Tuple, int]) -> int:
     """Compute the size of a tensor or a collection of tensors in bytes.
