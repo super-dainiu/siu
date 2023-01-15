@@ -1,10 +1,10 @@
 """``torch.fx.ShapeProp``, but with ``MetaTensor``"""
 
-from typing import Any, Dict, Tuple, Union, Callable
+from typing import Any, Callable, Dict, Tuple, Union
 
 import torch
-from torch.utils._pytree import tree_map
 import torch.fx
+from torch.utils._pytree import tree_map
 
 from siu._subclasses import MetaTensor, MetaTensorMode
 from siu.fx.node_util import MetaInfo
@@ -17,15 +17,19 @@ def _normalize_tuple(x):
         return (x,)
     return x
 
+
 def _current_device(module):
     return next(module.parameters()).device
 
+
 def register_shape_impl(func):
+
     def wrapper(impl):
         ShapeProp._custom_dispatch_func[func] = impl
         return impl
 
     return wrapper
+
 
 class ShapeProp(torch.fx.Interpreter):
     """
@@ -48,7 +52,7 @@ class ShapeProp(torch.fx.Interpreter):
         decorator. The method should take (*args, **kwargs) instance as its
         input and generate output.
 
-        For example, if you want to add a shape propagation rule for 
+        For example, if you want to add a shape propagation rule for
         ``torch.nn.functional.linear``, you can do so by adding a new method
         to this class with the ``@register_shape_impl`` decorator (Since the
         ``MetaTensorMode`` is compatible with ``torch.nn.functional.linear``,
