@@ -10,6 +10,7 @@ import torch
 
 aten = torch.ops.aten
 
+
 def matmul_flop_jit(inputs: List[Any], outputs: List[Any]) -> Number:
     """
     Count flops for matmul.
@@ -185,6 +186,7 @@ def zero_flop_jit(*args):
         Count flops for zero flop layers.
     """
     return 0
+
 
 flop_mapping = {
     # gemm
