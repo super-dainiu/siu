@@ -1,21 +1,20 @@
 from typing import Any, Callable, Dict, Iterable, List, Tuple
-from torch.fx.graph import (
-        CodeGen,
-        PythonCode,
-        _register_custom_builtin,
-        _custom_builtins,
-        _format_target,
-        _is_from_torch,
-        _Namespace,
-        _origin_type_map,
-        inplace_methods,
-        magic_methods,
-    )
-from torch.fx.node import Argument, Node, _get_qualified_name, _type_repr, map_arg
 
-import torch
 import colossalai
-from .node_util import MetaInfo
+import torch
+from torch.fx.graph import (
+    CodeGen,
+    PythonCode,
+    _custom_builtins,
+    _format_target,
+    _is_from_torch,
+    _Namespace,
+    _origin_type_map,
+    _register_custom_builtin,
+    inplace_methods,
+    magic_methods,
+)
+from torch.fx.node import Argument, Node, _get_qualified_name, _type_repr, map_arg
 
 _register_custom_builtin('colossalai', 'import colossalai', colossalai)
 
@@ -170,8 +169,8 @@ def emit_ckpt_func(body,
 
             if node_idx in start_idx:
                 ckpt_node_list = node_list[node_idx:end_idx[start_idx.index(node_idx)] + 1]
-                emit_ckpt_func(ckpt_func, ckpt_func_buffer, ckpt_node_list, emit_node_func,
-                                delete_unused_value_func, ckpt_level + 1, True)
+                emit_ckpt_func(ckpt_func, ckpt_func_buffer, ckpt_node_list, emit_node_func, delete_unused_value_func,
+                               ckpt_level + 1, True)
                 node_idx += len(ckpt_node_list)
 
             else:
@@ -192,7 +191,7 @@ def emit_ckpt_func(body,
             delete_unused_value_func(node, ckpt_func)
 
         ckpt_func.append('    ' + _gen_ckpt_output(outputs) + '\n\n')
-    
+
     usage = _gen_ckpt_usage(label, inputs, outputs, False) + '\n'
     if in_ckpt:
         usage = '    ' + usage
@@ -268,7 +267,6 @@ class ActivationCheckpointCodeGen(CodeGen):
                 return global_name
             globals_[global_name] = obj
             return global_name
-
 
         # Pre-fill the globals table with registered builtins.
         for name, (_, obj) in _custom_builtins.items():
@@ -368,9 +366,8 @@ class ActivationCheckpointCodeGen(CodeGen):
                 return
             elif node.op == 'call_method':
                 assert isinstance(node.target, str)
-                body.append(
-                    f'{repr(node)}{maybe_type_annotation} = {_format_target(repr(node.args[0]), node.target)}'
-                    f'({_format_args(node.args[1:], node.kwargs)})')
+                body.append(f'{repr(node)}{maybe_type_annotation} = {_format_target(repr(node.args[0]), node.target)}'
+                            f'({_format_args(node.args[1:], node.kwargs)})')
                 return
             elif node.op == 'call_function':
                 assert callable(node.target)
