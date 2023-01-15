@@ -18,11 +18,14 @@ orig_empty = torch.empty
 orig_empty_strided = torch.empty_strided
 orig_empty_like = torch.empty_like
 
+
 def new(*args, **kwargs):
     return orig_empty(*args, **kwargs, device=torch.device('meta'))
 
+
 def new_strided(*args, **kwargs):
     return orig_empty_strided(*args, **kwargs, device=torch.device('meta'))
+
 
 def new_like(*args, **kwargs):
     return orig_empty_like(*args, **kwargs, device=torch.device('meta'))
@@ -177,18 +180,9 @@ def meta_conv(
 
 
 @register_meta(aten._convolution.default)
-def meta__conv(
-    input_tensor: torch.Tensor,
-    weight: torch.Tensor,
-    bias: torch.Tensor,
-    stride: List[int],
-    padding: List[int],
-    dilation: List[int],
-    is_transposed: bool,
-    output_padding: List[int],
-    groups: int,
-    *extra_args
-):
+def meta__conv(input_tensor: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor, stride: List[int],
+               padding: List[int], dilation: List[int], is_transposed: bool, output_padding: List[int], groups: int,
+               *extra_args):
     out = meta_conv(input_tensor, weight, bias, stride, padding, dilation, is_transposed, output_padding, groups)
     return out
 
@@ -245,11 +239,8 @@ def meta_cuda_rnn(
     if is_input_packed:
         out_shape = [batch_sizes_sum, out_size * num_directions]
     else:
-        out_shape = (
-            [mini_batch, seq_length, out_size * num_directions]
-            if batch_first
-            else [seq_length, mini_batch, out_size * num_directions]
-        )
+        out_shape = ([mini_batch, seq_length, out_size *
+                      num_directions] if batch_first else [seq_length, mini_batch, out_size * num_directions])
     output = input.new_empty(out_shape)
 
     cell_shape = [num_layers * num_directions, mini_batch, hidden_size]
@@ -273,7 +264,8 @@ def meta_cudnn_rnn_backward(input: torch.Tensor,
                             cx: Optional[torch.Tensor] = None,
                             *args,
                             **kwargs):
-    return new_like(input), new_like(weight), new_like(hx), new_like(cx) if cx is not None else new(())    # (grad_input, grad_weight, grad_hx, grad_cx)
+    return new_like(input), new_like(weight), new_like(hx), new_like(cx) if cx is not None else new(
+        ())    # (grad_input, grad_weight, grad_hx, grad_cx)
 
 
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/Activation.cpp
@@ -288,9 +280,11 @@ _unregistered_ewise = [
     aten.hardtanh_backward.default,
 ]
 
+
 @register_meta(_unregistered_ewise)
 def meta_unregistered_ewise(input: torch.Tensor, *args):
     return new_like(input)
+
 
 # ============================== Normalization =====================================
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/cudnn/BatchNorm.cpp
@@ -304,14 +298,15 @@ def meta_bn(input: torch.Tensor, weight, bias, running_mean, running_var, traini
 @register_meta(aten.native_batch_norm_backward.default)
 def meta_bn_backward(dY: torch.Tensor, input: torch.Tensor, weight: torch.Tensor, running_mean, running_var, save_mean,
                      save_invstd, train, eps, output_mask):
-    return new_like(input), new_like(weight), new_like(weight)  # (dX, dgamma, dbeta)
+    return new_like(input), new_like(weight), new_like(weight)    # (dX, dgamma, dbeta)
 
 
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/cudnn/BatchNorm.cpp
 @register_meta(aten.cudnn_batch_norm.default)
 def meta_cudnn_bn(input: torch.Tensor, weight, bias, running_mean, running_var, training, momentum, eps):
     n_input = input.size(1)
-    return new_like(input), new((n_input)), new((n_input)), new((0), dtype=torch.uint8)  # (output, running_mean, running_var, reserve)
+    return new_like(input), new((n_input)), new((n_input)), new(
+        (0), dtype=torch.uint8)    # (output, running_mean, running_var, reserve)
 
 
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/cudnn/BatchNorm.cpp
@@ -321,7 +316,7 @@ def meta_cudnn_bn(input: torch.Tensor, weight, bias, running_mean, running_var, 
 @register_meta(aten.cudnn_batch_norm_backward.default)
 def meta_cudnn_bn_backward(dY: torch.Tensor, input: torch.Tensor, weight: torch.Tensor, running_mean, running_var,
                            save_mean, save_invstd, eps, reserve):
-    return new_like(input), new_like(weight), new_like(weight)  # (dX, dgamma, dbeta)
+    return new_like(input), new_like(weight), new_like(weight)    # (dX, dgamma, dbeta)
 
 
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/layer_norm.cpp
@@ -345,10 +340,12 @@ def meta_ln_backward(dY: torch.Tensor, input: torch.Tensor, normalized_shape, me
 def meta_im2col(input: torch.Tensor, kernel_size, dilation, padding, stride):
     return new_like(input)
 
+
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/native_functions.yaml
 @register_meta(aten.eye.m_out)
 def meta_eye(n: int, m: int, out: torch.Tensor):
     return out
+
 
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/native_functions.yaml
 @register_meta(aten.roll.default)
@@ -465,9 +462,9 @@ def meta_index_Tensor(self, indices):
 def meta_embedding_dense_backward(grad_output: torch.Tensor, indices: torch.Tensor, num_weights, padding_idx,
                                   scale_grad_by_freq):
     return new((num_weights, grad_output.size(-1)),
-                dtype=grad_output.dtype,
-                device=grad_output.device,
-                layout=grad_output.layout)
+               dtype=grad_output.dtype,
+               device=grad_output.device,
+               layout=grad_output.layout)
 
 
 # ============================== Dropout ===========================================
@@ -475,10 +472,10 @@ def meta_embedding_dense_backward(grad_output: torch.Tensor, indices: torch.Tens
 @register_meta(aten.native_dropout.default)
 def meta_native_dropout_default(input: torch.Tensor, p: float, train: bool = False):
     # notice that mask is bool
-    return new_like(input), new_like(input, dtype=torch.bool)   # (output, mask)
+    return new_like(input), new_like(input, dtype=torch.bool)    # (output, mask)
 
 
 # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/Dropout.cpp
 @register_meta(aten.native_dropout_backward.default)
 def meta_native_dropout_backward_default(grad: torch.Tensor, mask: torch.Tensor, scale: float):
-    return new_like(grad)   # (grad_in)
+    return new_like(grad)    # (grad_in)
