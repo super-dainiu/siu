@@ -32,11 +32,11 @@ A drawback of original torch.FX implementation is that it is poor at handling co
 
 ```python
 class MyModule(nn.Module):
-  def forward(self, x):
-    if x.dim() == 3:
-      return x * 2 + 1
-    else:
-      return x - 5
+    def forward(self, x):
+        if x.dim() == 3:
+            return x * 2 + 1
+        else:
+            return x - 5
 ```
 
 The above function has the computation graph of
