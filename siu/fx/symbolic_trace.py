@@ -8,9 +8,10 @@ import torch
 from torch.fx import Graph, Node, Proxy, Tracer
 from torch.utils._pytree import tree_map
 
-from siu._subclasses import MetaTensor, _TorchFactoryMethod, _TensorPropertyMethod
-from .node_util import MetaInfo
+from siu._subclasses import MetaTensor, _TensorPropertyMethod, _TorchFactoryMethod
+
 from .graph_module import ColoGraphModule
+from .node_util import MetaInfo
 
 Target = Union[Callable[..., Any], str]
 Argument = Optional[Union[Tuple[Any, ...],    # actually Argument, but mypy can't represent recursive types
@@ -18,6 +19,7 @@ Argument = Optional[Union[Tuple[Any, ...],    # actually Argument, but mypy can'
                           Dict[str, Any],    # actually Argument
                           slice,    # Slice[Argument, Argument, Argument], but slice is not a templated type in typing
                           'Node',]]
+
 
 def _truncate_suffix(s: str):
     import re
@@ -30,6 +32,7 @@ def _default_device():
 
 def _current_device(module):
     return next(module.parameters()).device
+
 
 class ColoProxy(Proxy):
 
