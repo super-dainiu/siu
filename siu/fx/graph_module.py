@@ -1,27 +1,28 @@
 import os
 import warnings
 from pathlib import Path
-from typing import Union, Dict, Any, Optional
+from typing import Any, Dict, Optional, Union
 
 import torch
 import torch.fx
+import torch.nn as nn
 from torch.fx.graph import PythonCode, _PyTreeCodeGen
 from torch.fx.graph_module import _exec_with_source, _forward_from_src, _WrappedCall
-import torch.nn as nn
 from torch.nn.modules.module import _addindent
 
 from .codegen import ActivationCheckpointCodeGen
 
+
 class ColoGraphModule(torch.fx.GraphModule):
     """
-    ColoGraphGraphModule is an nn.Module generated from an fx.Graph. 
-    ColoGraphmodule has a ``graph`` attribute, as well as ``code`` and ``forward`` 
+    ColoGraphGraphModule is an nn.Module generated from an fx.Graph.
+    ColoGraphmodule has a ``graph`` attribute, as well as ``code`` and ``forward``
     attributes generated from that ``graph``.
 
     The difference between ``ColoGraphModule`` and ``torch.fx.GraphModule`` is that
-    ``ColoGraphModule`` has a ``bind()`` function to bind customized functions 
+    ``ColoGraphModule`` has a ``bind()`` function to bind customized functions
     (i.e. activation checkpoint) to ``code`` of ``nn.Module``. If you want to use
-    specific features in Colossal-AI that are not supported by ``torch.fx.GraphModule``, 
+    specific features in Colossal-AI that are not supported by ``torch.fx.GraphModule``,
     you can use ``ColoGraphModule`` instead.
 
     ``colossalai.fx.symbolic_trace()`` will return a ``ColoGraphModule`` as default.
@@ -34,14 +35,17 @@ class ColoGraphModule(torch.fx.GraphModule):
         code.
     """
 
-    def __init__(self, root: Union[torch.nn.Module, Dict[str, Any]], graph: torch.fx.Graph, class_name: str = 'GraphModule'):
+    def __init__(self,
+                 root: Union[torch.nn.Module, Dict[str, Any]],
+                 graph: torch.fx.Graph,
+                 class_name: str = 'GraphModule'):
         graph.set_codegen(ActivationCheckpointCodeGen())
         super().__init__(root, graph, class_name)
 
     def bind(self, ckpt_def, globals):
         """Bind function needed for correctly execute ``GraphModule.forward()``
 
-        We need to bind checkpoint functions to ``ColoGraphModule`` so that we could 
+        We need to bind checkpoint functions to ``ColoGraphModule`` so that we could
         correctly execute ``GraphModule.forward()``
 
         Args:
@@ -131,9 +135,7 @@ class {module_name}(torch.nn.Module):
 """
 
         def _gen_model_repr(module_name: str, module: torch.nn.Module) -> Optional[str]:
-            safe_reprs = [
-                nn.Linear, nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d
-            ]
+            safe_reprs = [nn.Linear, nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d]
             if type(module) in safe_reprs:
                 return f"{module.__repr__()}"
             else:
@@ -171,4 +173,4 @@ class {module_name}(torch.nn.Module):
 
         if len(blobified_modules) > 0:
             warnings.warn("Was not able to save the following children modules as reprs -"
-                            f"saved as pickled files instead: {blobified_modules}")
+                          f"saved as pickled files instead: {blobified_modules}")
