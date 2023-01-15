@@ -178,7 +178,7 @@ class MetaTensorMode(object):
             setattr(torch, func, partial(_new, orig_new=getattr(torch, func)))
 
         for func in _DistCommMethod:
-            self.dist_overrides[func] = getattr(torch.distributed, func)
+            self.dist_overrides[func] = getattr(dist, func)
             setattr(dist, func, _dummy)
 
     def __exit__(self, exc_type, exc_value, traceback):
