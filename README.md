@@ -28,7 +28,7 @@ torch.FX is a toolkit for developers to use to transform nn.Module instances. FX
 ![image](https://user-images.githubusercontent.com/78588128/212531495-bbb934dd-dbbb-4578-8869-6171973f7dd8.png)
 
 ### siu.fx.symbolic_trace()
-A drawback of original torch.FX implementation is that it is poor at handling control-flow. All control-flow are not PyTorch native operands, and requires actual instances specify the branches to execute on. For example,
+A drawback of the original torch.FX implementation is that it is poor at handling control flow. All control-flow is not PyTorch native operands, and requires actual instances specify the branches to execute on. For example,
 
 ```python
 class MyModule(nn.Module):
