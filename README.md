@@ -50,6 +50,9 @@ However, since Proxy does not have concrete data, applying ``x.dim()`` will retu
 
 With ``MetaTensor``, the computation during shape propagation can be virtualize. This speeds up tracing by avoiding allocating actual memory on devices.
 
+#### Remarks
+There is no free lunch for PyTorch to unify all operands in both its own repo and other repos in its eco-system. For example, the einops library currently has no intention to support torch.FX (See https://github.com/arogozhnikov/einops/issues/188). To support different PyTorch-based libraries without modifying source code, good practices can be to allow users register their implementation to substitute the functions not supported by torch.FX, or to avoid entering incompatible submodules.
+
 ### siu.fx.passes.ShapeProp
 ``ShapeProp`` is another important feature for Colossal-AI's auto-parallel system. Both Tensor Parallel and Activation Checkpoint solvers need to know the shape information ahead of time. Unlike PyTorch's implementation, this ShapeProp can be executed under MetaTensorMode. With this, all the preparation for auto-parallel solvers can be done in milliseconds.
 
