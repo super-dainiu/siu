@@ -1,5 +1,6 @@
 # adopted from https://github.com/facebookresearch/fvcore/blob/main/fvcore/nn/jit_handles.py
 # ideas from https://pastebin.com/AkvAyJBw
+# and https://dev-discuss.pytorch.org/t/the-ideal-pytorch-flop-counter-with-torch-dispatch/505
 
 import operator
 from functools import partial, reduce

@@ -29,7 +29,7 @@ class MetaTensor(torch.Tensor):
     `device` is the device that ``MetaTensor`` is supposed to run on. Meta tensors give you the
     ability to run PyTorch code without having to actually do computation through tensors
     allocated on a `meta` device. Because the device is `meta`, meta tensors do not model
-    device propagation. ``MetaTensor`` extends its usage by carrying an additional `fake_device`
+    device propagation. ``MetaTensor`` extends its usage by carrying an additional `device`
     which tracks devices that would have been used.
 
     Reference:
@@ -68,9 +68,10 @@ class MetaTensor(torch.Tensor):
         return r
 
     def __repr__(self):
+        name = 'MetaTensor' if getattr(self, '_is_param', False) else 'MetaParameter'
         if self.grad_fn:
-            return f"MetaTensor(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype}, grad_fn={self.grad_fn})"
-        return f"MetaTensor(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype})"
+            return f"{name}(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype}, grad_fn={self.grad_fn})"
+        return f"{name}(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype})"
 
     @classmethod
     def __torch_dispatch__(cls, func, types, args=(), kwargs=None):
