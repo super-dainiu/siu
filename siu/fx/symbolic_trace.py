@@ -309,7 +309,7 @@ class ColoTracer(Tracer):
         return self.graph
 
     @contextmanager
-    def _tracer_override(self, enabled: bool):
+    def _tracer_override(self):
         if self.trace_act_ckpt:
             orig_ckpt_func_apply = torch.utils.checkpoint.CheckpointFunction.apply
             orig_ckpt_func_without_reentrant = torch.utils.checkpoint._checkpoint_without_reentrant

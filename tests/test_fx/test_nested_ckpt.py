@@ -6,6 +6,7 @@ from siu.fx import symbolic_trace
 
 
 class MyModule(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.a = nn.Linear(10, 10)
@@ -15,7 +16,7 @@ class MyModule(nn.Module):
         self.e = nn.Linear(10, 10)
 
     def checkpoint_0(self, x):
-       return checkpoint(self.checkpoint_0_0, x) + checkpoint(self.checkpoint_0_1, x) + self.e(x)
+        return checkpoint(self.checkpoint_0_0, x) + checkpoint(self.checkpoint_0_1, x) + self.e(x)
 
     def checkpoint_0_0(self, x):
         return checkpoint(self.checkpoint_0_0_0, x) + checkpoint(self.checkpoint_0_0_1, x)
@@ -43,6 +44,7 @@ def test_nested_ckpt():
     assert torch.allclose(gm(x), model(x)), "The traced model should generate the same output as the original model."
     for ckpt_def in filter(lambda s: s.startswith('checkpoint'), dir(model)):
         assert ckpt_def in gm.code, f"Checkpoint {ckpt_def} should be in the traced code.\n Traced code = {gm.code}"
+
 
 if __name__ == "__main__":
     test_nested_ckpt()

@@ -95,17 +95,17 @@ class MetaTensor(torch.Tensor):
 
         # run aten for backend=CPU but actually on backend=Meta
         # here we detect whether or not the execution generates a physical copy
-        # of the input
-        out = func(*args, **kwargs)
+        # of the input tensor
+        ret = func(*args, **kwargs)
         if _assert_alias(func):
-            out.data_ptr = args[0].data_ptr
+            ret.data_ptr = args[0].data_ptr
 
         # Now, we want to continue propagating this tensor, so we rewrap Tensors in
         # our custom tensor subclass
         def wrap(x):
             return MetaTensor(x, device=device) if isinstance(x, torch.Tensor) else x
 
-        return tree_map(wrap, out)
+        return tree_map(wrap, ret)
 
     def to(self, *args, **kwargs) -> torch.Tensor:
         """An extension of `torch.Tensor.to()` to MetaTensor

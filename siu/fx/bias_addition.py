@@ -6,6 +6,7 @@ graph construction to deal with the compatibility between bias-addition and all-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.modules.utils import _pair, _single, _triple
 
 from .symbolic_trace import register_tracer_impl
 
@@ -19,27 +20,30 @@ def linear_impl(input, weight, bias=None):
 
 
 @register_tracer_impl(F.conv1d, name='_bias_addition_impl')
-def conv1d_impl(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
+def conv1d_impl(input, weight, bias=None, stride=_single(1), padding=_single(0), dilation=_single(1), groups=1):
     if bias is None:
         return F.conv1d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups)
     else:
-        return F.conv1d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups) + bias
+        return F.conv1d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups) + bias.reshape(
+            (-1, 1))
 
 
 @register_tracer_impl(F.conv2d, name='_bias_addition_impl')
-def conv2d_impl(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
+def conv2d_impl(input, weight, bias=None, stride=_pair(1), padding=_pair(0), dilation=_pair(1), groups=1):
     if bias is None:
         return F.conv2d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups)
     else:
-        return F.conv2d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups) + bias
+        return F.conv2d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups) + bias.reshape(
+            (-1, 1, 1))
 
 
 @register_tracer_impl(F.conv3d, name='_bias_addition_impl')
-def conv3d_impl(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
+def conv3d_impl(input, weight, bias=None, stride=_triple(1), padding=_triple(0), dilation=_triple(1), groups=1):
     if bias is None:
         return F.conv3d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups)
     else:
-        return F.conv3d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups) + bias
+        return F.conv3d(input, weight, stride=stride, padding=padding, dilation=dilation, groups=groups) + bias.reshape(
+            (-1, 1, 1, 1))
 
 
 @register_tracer_impl(torch.addmm, name='_bias_addition_impl')
