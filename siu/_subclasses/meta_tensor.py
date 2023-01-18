@@ -63,6 +63,8 @@ class MetaTensor(torch.Tensor):
             r._tensor = r._tensor.to(torch.device('meta'))
         # only tensor not on `meta` should be copied to `meta`
         register_storage(r._tensor)
+        if isinstance(elem, torch.nn.Parameter):
+            r = torch.nn.Parameter(r)
         return r
 
     def __repr__(self):

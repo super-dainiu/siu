@@ -2,9 +2,10 @@ import functools
 import inspect
 import operator
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 import torch
+import torch.nn as nn
 from torch.fx import Graph, Node, Proxy, Tracer
 from torch.utils._pytree import tree_map
 
@@ -34,7 +35,26 @@ def _current_device(module):
     return next(module.parameters()).device
 
 
+def register_tracer_impl(func: Callable[..., Any], name: Optional[str] = '_custom_impl'):
+
+    def wrapper(impl):
+        assert hasattr(ColoTracer, name), f"Cannot register {func.__name__} in ColoTracer.{name}"
+        getattr(ColoTracer, name)[func] = impl
+        return impl
+
+    return wrapper
+
+
+def register_leaf_module(module: nn.Module):
+    ColoTracer._custom_leaf_module.add(type(module))
+
+
+def register_non_leaf_module(module: nn.Module):
+    ColoTracer._custom_non_leaf_module.add(type(module))
+
+
 class ColoProxy(Proxy):
+    _func_dispatch: Dict[Target, Callable[..., Any]] = {}
 
     def __init__(self, *args, data=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,9 +71,14 @@ class ColoProxy(Proxy):
 
     @classmethod
     def __torch_function__(cls, orig_method, types, args=(), kwargs=None):
+        kwargs = {} if kwargs is None else kwargs
+        if orig_method in cls._func_dispatch:
+            impl = cls._func_dispatch.pop(orig_method)    # avoid recursion
+            proxy = impl(*args, **kwargs)
+            cls._func_dispatch[orig_method] = impl
+            return proxy
         proxy = cls.from_torch_proxy(super().__torch_function__(orig_method, types, args, kwargs))
         unwrap_fn = lambda p: p.meta_data if isinstance(p, ColoProxy) else p
-        kwargs = {} if kwargs is None else kwargs
         if proxy.meta_data is None:
             proxy.meta_data = orig_method(*tree_map(unwrap_fn, args), **tree_map(unwrap_fn, kwargs))
         return proxy
@@ -157,17 +182,43 @@ class ColoAttribute(ColoProxy):
 
 
 class ColoTracer(Tracer):
+    _custom_leaf_module: Set[Type[nn.Module]] = set()
+    _custom_non_leaf_module: Set[Type[nn.Module]] = set()
+    _custom_impl: Dict[Callable[..., Any], Callable[..., Any]] = {}
+    _bias_addition_impl: Dict[Callable[..., Any], Callable[..., Any]] = {}
+    _bias_addition_module = [
+        torch.nn.Linear,
+        torch.nn.Conv1d,
+        torch.nn.Conv2d,
+        torch.nn.Conv3d,
+    # torch.nn.ConvTranspose1d,
+    # torch.nn.ConvTranspose2d,
+    # torch.nn.ConvTranspose3d,
+    # torch.nn.Bilinear,
+    ]
 
-    def __init__(self, trace_act_ckpt: bool = False, *args, **kwargs):
+    def __init__(self, trace_act_ckpt: bool = False, bias_addition_split: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.disable_module_getattr = False
         self.proxy_buffer_attributes = True
 
         # whether the tracer will record the usage of torch.utils.checkpoint
         self.trace_act_ckpt = trace_act_ckpt
-        # whether the current tracing occurs within the activation checkpoint functions
         self.ckpt_regions = []
         self.ckpt_idx = 0
+
+        # whether the tracer should split the bias_add ops into two ops
+        self.bias_addition_split = bias_addition_split
+
+    def is_leaf_module(self, m: nn.Module, module_qualified_name: str) -> bool:
+        # if bias-addiction split is enabled, and module has bias, then it is not a leaf module
+        # we will enter the module and split the bias-addition ops
+        if self.bias_addition_split and type(m) in self._bias_addition_module and m.bias is not None:
+            return False
+
+        # user can specify which modules are leaf modules and which are not
+        return (type(m) not in self._custom_non_leaf_module
+                and (type(m) in self._custom_leaf_module or super().is_leaf_module(m, module_qualified_name)))
 
     def proxy(self, node: Node) -> 'ColoProxy':
         return ColoProxy(node, self)
@@ -252,14 +303,14 @@ class ColoTracer(Tracer):
         self.concrete_args = concrete_args
         self.meta_args = meta_args
 
-        with _TorchTensorOverride(self), self.trace_activation_checkpoint(enabled=self.trace_act_ckpt):
+        with _TorchTensorOverride(self), self._tracer_override():
             self.graph = super().trace(root, concrete_args=concrete_args)
         self.graph.lint()
         return self.graph
 
     @contextmanager
-    def trace_activation_checkpoint(self, enabled: bool):
-        if enabled:
+    def _tracer_override(self, enabled: bool):
+        if self.trace_act_ckpt:
             orig_ckpt_func_apply = torch.utils.checkpoint.CheckpointFunction.apply
             orig_ckpt_func_without_reentrant = torch.utils.checkpoint._checkpoint_without_reentrant
 
@@ -272,12 +323,23 @@ class ColoTracer(Tracer):
             # override the checkpoint function
             torch.utils.checkpoint.CheckpointFunction.apply = checkpoint
             torch.utils.checkpoint._checkpoint_without_reentrant = checkpoint
+
+        # override the custom functions
+        ColoProxy._func_dispatch.update({k: v for k, v in self._custom_impl.items()})
+
+        # override the bias addition functions
+        if self.bias_addition_split:
+            ColoProxy._func_dispatch.update({k: v for k, v in self._bias_addition_impl.items()})
+            ColoTracer
+
         yield
 
-        if enabled:
+        if self.trace_act_ckpt:
             # recover the checkpoint function upon exit
             torch.utils.checkpoint.CheckpointFunction.apply = orig_ckpt_func_apply
             torch.utils.checkpoint._checkpoint_reentrant = orig_ckpt_func_without_reentrant
+
+        ColoProxy._func_dispatch = {}
 
     def _post_check(self, non_concrete_arg_names: Set[str]):
         # This is necessary because concrete args are added as input to the traced module since
@@ -346,14 +408,16 @@ def symbolic_trace(
     root: Union[torch.nn.Module, Callable[..., Any]],
     concrete_args: Optional[Dict[str, Any]] = {},
     meta_args: Optional[Dict[str, Any]] = {},
-    trace_act_ckpt=False,
+    trace_act_ckpt: bool = False,
+    bias_addition_split: bool = False,
 ) -> ColoGraphModule:
     if meta_args:
         device, orig_device = _default_device(), _current_device(root)
         wrap_fn = lambda elem: MetaTensor(elem, device=device) if isinstance(elem, torch.Tensor) else elem
-        graph = ColoTracer(trace_act_ckpt=trace_act_ckpt).trace(root.to(device),
-                                                                concrete_args=concrete_args,
-                                                                meta_args=tree_map(wrap_fn, meta_args))
+        graph = ColoTracer(trace_act_ckpt=trace_act_ckpt,
+                           bias_addition_split=bias_addition_split).trace(root.to(device),
+                                                                          concrete_args=concrete_args,
+                                                                          meta_args=tree_map(wrap_fn, meta_args))
         root.to(orig_device)
     else:
         graph = Tracer().trace(root, concrete_args=concrete_args)
@@ -362,6 +426,10 @@ def symbolic_trace(
 
 
 class _TorchTensorOverride(object):
+    """
+    Override ``torch.Tensor`` methods to create a proxy when the method
+    is called during ``symbolic_trace()``.
+    """
 
     def __init__(self, tracer: Tracer):
         self.overrides = {}
