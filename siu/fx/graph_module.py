@@ -39,7 +39,6 @@ class ColoGraphModule(torch.fx.GraphModule):
                  root: Union[torch.nn.Module, Dict[str, Any]],
                  graph: torch.fx.Graph,
                  class_name: str = 'GraphModule'):
-        graph.set_codegen(ActivationCheckpointCodeGen())
         super().__init__(root, graph, class_name)
 
     def bind(self, ckpt_def, globals):

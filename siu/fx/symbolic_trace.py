@@ -11,6 +11,7 @@ from torch.utils._pytree import tree_map
 
 from siu._subclasses import MetaTensor, _TensorPropertyMethod, _TorchFactoryMethod
 
+from .codegen import ActivationCheckpointCodeGen
 from .graph_module import ColoGraphModule
 from .node_util import MetaInfo
 
@@ -367,8 +368,6 @@ class ColoTracer(Tracer):
 
                     self.graph.erase_node(node)
 
-            # TODO: solves GraphModule creation.
-            # Without this, return type annotation "Tuple" is causing code execution failure.
             if node.op == "output":
                 node.type = None
             self.graph.lint()
@@ -418,6 +417,8 @@ def symbolic_trace(
                            bias_addition_split=bias_addition_split).trace(root.to(device),
                                                                           concrete_args=concrete_args,
                                                                           meta_args=tree_map(wrap_fn, meta_args))
+        if trace_act_ckpt:
+            graph.set_codegen(ActivationCheckpointCodeGen())
         root.to(orig_device)
     else:
         graph = Tracer().trace(root, concrete_args=concrete_args)
