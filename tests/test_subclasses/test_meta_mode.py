@@ -1,5 +1,7 @@
+import pytest
 import torch
 import torch.distributed as dist
+import torchvision.models as tm
 from zoo import tm_models, tmm_models
 
 from siu._subclasses import MetaTensor, MetaTensorMode
@@ -24,18 +26,10 @@ def run_and_compare(model):
     compare_all(x.grad, meta_x.grad)
 
 
-def test_meta_mode_shape():
-    for m in tm_models + tmm_models:
-        run_and_compare(m())
-
-
-def test_meta_mode_backward():
-    for m in tm_models + tmm_models:
-        with MetaTensorMode():
-            meta_x = torch.rand(2, 3, 224, 224, requires_grad=True)
-            meta_out = m(meta_x)
-            meta_out.sum().backward()
+@pytest.mark.parametrize('m', tm_models + tmm_models)
+def test_meta_mode_shape(m):
+    run_and_compare(m())
 
 
 if __name__ == '__main__':
-    test_meta_mode_shape()
+    test_meta_mode_shape(tm.resnet18)
