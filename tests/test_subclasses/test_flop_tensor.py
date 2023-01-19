@@ -16,4 +16,4 @@ def test_flop_count(m):
 
 
 if __name__ == '__main__':
-    test_flop_count(tm.resnet18)
+    test_flop_count(tm.resnet18, torch.rand(2, 3, 224, 224))
