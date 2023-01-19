@@ -45,8 +45,8 @@ class MetaInfo:
     # should be updated after each graph manipulation
     # ============================== Update ====================================
     # parameter and buffer within ``Node``
-    parameters: Dict[str, torch.nn.Parameter] = field(default_factory=dict)
-    buffers: Dict[str, torch.Tensor] = field(default_factory=dict)
+    parameters: Dict[str, torch.nn.Parameter] = field(default_factory=lambda: {})
+    buffers: Dict[str, torch.Tensor] = field(default_factory=lambda: {})
 
     # intermediate tensor as output
     data: Tuple[torch.Tensor] = ()
@@ -71,10 +71,17 @@ class MetaInfo:
     sharding_spec: str = 'RR'
 
     def __new__(cls, node: Node, **kwargs):
+        orig_init = cls.__init__
+
+        # if initialized, return the existing one
+        # should disable the __init__ function
         if node.meta.get('info', None) is not None:
 
-            def _dummy(*args, **kwargs):
-                pass
+            def _dummy(self, *args, **kwargs):
+                if getattr(self, '_is_init', False):
+                    self._is_init = True
+                    orig_init(self, *args, **kwargs)
+                cls.__init__ = orig_init
 
             cls.__init__ = _dummy
             return node.meta['info']

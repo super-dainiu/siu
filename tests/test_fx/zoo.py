@@ -1,6 +1,5 @@
-import torchvision.models as tm
 import timm.models as tmm
-
+import torchvision.models as tm
 
 # input shape: (batch_size, 3, 224, 224)
 tm_models = [

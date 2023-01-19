@@ -48,12 +48,12 @@ def conv3d_impl(input, weight, bias=None, stride=_triple(1), padding=_triple(0),
 
 @register_tracer_impl(torch.addmm, name='_bias_addition_impl')
 @register_tracer_impl(torch.Tensor.addmm, name='_bias_addition_impl')
-def addmm_impl(input, mat1, mat2, beta=None, alpha=None):
-    if alpha is not None and beta is not None:
+def addmm_impl(input, mat1, mat2, beta=1, alpha=1):
+    if alpha != 1 and beta != 1:
         return F.linear(mat1, mat2.transpose(0, 1)) * alpha + input * beta
-    elif alpha is not None:
+    elif alpha != 1:
         return F.linear(mat1, mat2.transpose(0, 1)) * alpha + input
-    elif beta is not None:
+    elif beta != 1:
         return F.linear(mat1, mat2.transpose(0, 1)) + input * beta
     else:
         return F.linear(mat1, mat2.transpose(0, 1)) + input

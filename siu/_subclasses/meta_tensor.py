@@ -68,7 +68,7 @@ class MetaTensor(torch.Tensor):
         return r
 
     def __repr__(self):
-        name = 'MetaTensor' if getattr(self, '_is_param', False) else 'MetaParameter'
+        name = 'MetaParameter' if getattr(self, '_is_param', False) else 'MetaTensor'
         if self.grad_fn:
             return f"{name}(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype}, grad_fn={self.grad_fn})"
         return f"{name}(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype})"

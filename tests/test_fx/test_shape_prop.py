@@ -1,3 +1,4 @@
+import pytest
 import timm.models as tmm
 import torch
 import torchvision.models as tm
@@ -19,32 +20,32 @@ def linear_impl(*args, **kwargs):
     return torch.nn.functional.linear(*args, **kwargs)
 
 
-def test_torchvision_shape_prop():
-    for m in tm_models:
-        with MetaTensorMode():
-            model = m()
-            data = torch.rand(100, 3, 224, 224)
-        meta_args = {
-            "x": data,
-        }
-        gm = symbolic_trace(model, meta_args=meta_args)
-        shape_prop_pass(gm, data, device=torch.device('cuda:0'))
-        _check_gm_validity(gm)
+@pytest.mark.parametrize('m', tm_models)
+def test_torchvision_shape_prop(m):
+    with MetaTensorMode():
+        model = m()
+        data = torch.rand(100, 3, 224, 224)
+    meta_args = {
+        "x": data,
+    }
+    gm = symbolic_trace(model, meta_args=meta_args)
+    shape_prop_pass(gm, data)
+    _check_gm_validity(gm)
 
 
-def test_timm_shape_prop():
-    for m in tmm_models:
-        with MetaTensorMode():
-            model = m()
-            data = torch.rand(100, 3, 224, 224)
-        meta_args = {
-            "x": data,
-        }
-        gm = symbolic_trace(model, meta_args=meta_args)
-        shape_prop_pass(gm, data, device=torch.device('cuda:0'))
-        _check_gm_validity(gm)
+@pytest.mark.parametrize('m', tmm_models)
+def test_timm_shape_prop(m):
+    with MetaTensorMode():
+        model = m()
+        data = torch.rand(100, 3, 224, 224)
+    meta_args = {
+        "x": data,
+    }
+    gm = symbolic_trace(model, meta_args=meta_args)
+    shape_prop_pass(gm, data)
+    _check_gm_validity(gm)
 
 
 if __name__ == "__main__":
-    test_torchvision_shape_prop()
-    test_timm_shape_prop()
+    test_torchvision_shape_prop(tm.resnet18)
+    test_timm_shape_prop(tmm.vgg11)

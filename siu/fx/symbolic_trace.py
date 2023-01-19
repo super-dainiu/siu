@@ -33,7 +33,10 @@ def _default_device():
 
 
 def _current_device(module):
-    return next(module.parameters()).device
+    try:
+        return next(module.parameters()).device
+    except:
+        return _default_device()
 
 
 def register_tracer_impl(func: Callable[..., Any], name: Optional[str] = '_custom_impl'):
