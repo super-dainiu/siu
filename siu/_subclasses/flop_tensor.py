@@ -3,13 +3,183 @@
 # and https://dev-discuss.pytorch.org/t/the-ideal-pytorch-flop-counter-with-torch-dispatch/505
 
 import operator
+from collections import defaultdict
+from contextlib import contextmanager
 from functools import partial, reduce
 from numbers import Number
 from typing import Any, Callable, List
 
 import torch
+from torch.utils._pytree import tree_map
+
+from .meta_tensor import MetaTensor
 
 aten = torch.ops.aten
+
+
+def normalize_tuple(x):
+    if not isinstance(x, tuple):
+        return (x,)
+    return x
+
+
+def _format_flops(flop):
+    K = 1e3
+    M = 1e6
+    B = 1e9
+    T = 1e12
+    if flop < K:
+        return f'{flop:.2f}'
+    elif flop < M:
+        return f'{flop / K:.2f}K'
+    elif flop < B:
+        return f'{flop / M:.2f}M'
+    elif flop < T:
+        return f'{flop / B:.2f}B'
+    else:
+        return f'{flop / T:.2f}T'
+
+
+def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
+    """
+    Count the number of floating point operations in a model.
+    Ideas from https://pastebin.com/AkvAyJBw.
+    Args:
+        module (torch.nn.Module): A PyTorch model.
+        *args: Input arguments to the model.
+        verbose (bool): If True, print the number of flops for each module.
+
+    Returns:
+        Number: The total number of floating point operations.
+    """
+
+    total_flop_count = 0
+    flop_counts = defaultdict(lambda: defaultdict(int))
+    parents = ['Global']
+
+    class FlopTensor(MetaTensor):
+        elem: torch.Tensor
+
+        def __repr__(self):
+            name = 'FlopParameter' if getattr(self, '_is_param', False) else 'FlopTensor'
+            if self.grad_fn:
+                return f"{name}(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype}, grad_fn={self.grad_fn})"
+            return f"{name}(..., size={tuple(self.shape)}, device='{self.device}', dtype={self.dtype})"
+
+        @classmethod
+        def __torch_dispatch__(cls, func, types, args=(), kwargs=None):
+
+            # no_dispatch is only needed if you use enable_python_mode.
+            # It prevents infinite recursion.
+            rs = super().__torch_dispatch__(func, types, args, kwargs)
+            outs = normalize_tuple(rs)
+
+            if func in flop_mapping:
+                nonlocal flop_counts, total_flop_count
+                flop_count = flop_mapping[func](args, outs)
+                for par in parents:
+                    flop_counts[par][func.__name__] += flop_count
+                total_flop_count += flop_count
+
+            def wrap(x):
+                if isinstance(x, MetaTensor):
+                    x = FlopTensor(x)
+                return x
+
+            rs = tree_map(wrap, rs)
+
+            return rs
+
+    def create_backwards_push(name):
+
+        class PushState(torch.autograd.Function):
+
+            @staticmethod
+            def forward(ctx, *args):
+                args = tree_map(lambda x: x.clone() if isinstance(x, torch.Tensor) else x, args)
+                if len(args) == 1:
+                    return args[0]
+                return args
+
+            @staticmethod
+            def backward(ctx, *grad_outs):
+                nonlocal parents
+                parents.append(name)
+                return grad_outs
+
+        return PushState.apply
+
+    def create_backwards_pop(name):
+
+        class PopState(torch.autograd.Function):
+
+            @staticmethod
+            def forward(ctx, *args):
+                args = tree_map(lambda x: x.clone() if isinstance(x, torch.Tensor) else x, args)
+                if len(args) == 1:
+                    return args[0]
+                return args
+
+            @staticmethod
+            def backward(ctx, *grad_outs):
+                nonlocal parents
+                assert (parents[-1] == name)
+                parents.pop()
+                return grad_outs
+
+        return PopState.apply
+
+    def enter_module(name):
+
+        def f(module, inputs):
+            nonlocal parents
+            parents.append(name)
+            inputs = normalize_tuple(inputs)
+            out = create_backwards_pop(name)(*inputs)
+            return out
+
+        return f
+
+    def exit_module(name):
+
+        def f(module, inputs, outputs):
+            nonlocal parents
+            assert (parents[-1] == name)
+            parents.pop()
+            outputs = normalize_tuple(outputs)
+            return create_backwards_push(name)(*outputs)
+
+        return f
+
+    @contextmanager
+    def instrument_module(mod):
+        registered = []
+        for name, module in dict(mod.named_children()).items():
+            registered.append(module.register_forward_pre_hook(enter_module(name)))
+            registered.append(module.register_forward_hook(exit_module(name)))
+        yield
+        for handle in registered:
+            handle.remove()
+
+    def display_flops():
+        for mod in flop_counts.keys():
+            print(f"Module: ", mod)
+            for k, v in flop_counts[mod].items():
+                print('\t', k, _format_flops(v))
+            print()
+
+    def wrap(r):
+        if isinstance(r, torch.Tensor):
+            return FlopTensor(r)
+        return r
+
+    with instrument_module(module):
+        module(*tree_map(wrap, args)).sum().backward()
+
+    if verbose:
+        display_flops()
+
+    return total_flop_count
 
 
 def matmul_flop_jit(inputs: List[Any], outputs: List[Any]) -> Number:
