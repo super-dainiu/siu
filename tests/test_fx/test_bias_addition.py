@@ -13,7 +13,6 @@ class LinearModel(torch.nn.Module):
 
     def forward(self, x):
         x = self.linear(x)
-        x = x * 2
         return x
 
 
@@ -29,10 +28,20 @@ class ConvModel(torch.nn.Module):
                                     stride=2,
                                     dilation=2,
                                     groups=3)
+        self.conv_transpose = torch.nn.ConvTranspose2d(in_channel,
+                                                       out_channels,
+                                                       kernel_size,
+                                                       bias=bias,
+                                                       padding=1,
+                                                       stride=2,
+                                                       dilation=2,
+                                                       groups=3)
 
-    def forward(self, x):
-        x = self.conv(x)
-        x = x * 2
+    def forward(self, x, select=0):
+        if select == 0:
+            x = self.conv(x)
+        else:
+            x = self.conv_transpose(x)
         return x
 
 
@@ -43,9 +52,9 @@ class SiuModel(torch.nn.Module):
         self.linear = LinearModel(3, 3, bias)
         self.conv = ConvModel(3, 6, 3, bias)
 
-    def forward(self, x):
+    def forward(self, x, select=0):
         x = self.linear(x)
-        x = checkpoint(self.conv, x)
+        x = checkpoint(self.conv, x, select)
         return x
 
 
@@ -64,11 +73,20 @@ class AddmmModel(torch.nn.Module):
 @pytest.mark.parametrize("bias", [True, False])
 @pytest.mark.parametrize("bias_addition_split", [True, False])
 @pytest.mark.parametrize("shape", [(3, 3, 3), (3, 3, 3, 3)])
-def test_siu_model(bias, bias_addition_split, shape):
+@pytest.mark.parametrize("select", [0, 1])
+def test_siu_model(bias, bias_addition_split, shape, select):
     model = SiuModel(bias=bias)
     x = torch.rand(shape)
-    gm = symbolic_trace(model, meta_args={'x': x}, trace_act_ckpt=True, bias_addition_split=bias_addition_split)
-    assert torch.allclose(model(x), gm(x)), 'original model and traced model should be the same!'
+    gm = symbolic_trace(model,
+                        meta_args={'x': x},
+                        concrete_args={'select': select},
+                        trace_act_ckpt=True,
+                        bias_addition_split=bias_addition_split)
+    assert torch.allclose(model(x, select), gm(x, select)), 'original model and traced model should be the same!'
+    if bias and bias_addition_split:
+        assert '+' in gm.code, 'bias addition should be split!'
+    else:
+        assert '+' not in gm.code, 'bias addition should not be split!'
 
 
 @pytest.mark.parametrize("alpha", [1, 2])
@@ -80,6 +98,10 @@ def test_addmm_model(alpha, beta, bias_addition_split, shape):
     x = torch.rand(shape)
     gm = symbolic_trace(model, meta_args={'x': x}, trace_act_ckpt=True, bias_addition_split=bias_addition_split)
     assert torch.allclose(model(x), gm(x)), 'original model and traced model should be the same!'
+    if (alpha == 1 and beta == 1) or not bias_addition_split:
+        assert '*' not in gm.code, 'bias addition should not be split!'
+    elif bias_addition_split:
+        assert '+' in gm.code, 'bias addition should be split!'
 
 
 if __name__ == '__main__':

@@ -46,6 +46,87 @@ def conv3d_impl(input, weight, bias=None, stride=_triple(1), padding=_triple(0),
             (-1, 1, 1, 1))
 
 
+@register_tracer_impl(F.conv_transpose1d, name='_bias_addition_impl')
+def conv_transpose1d_impl(input,
+                          weight,
+                          bias=None,
+                          stride=_single(1),
+                          padding=_single(0),
+                          output_padding=_single(0),
+                          groups=1,
+                          dilation=_single(1)):
+    if bias is None:
+        return F.conv_transpose1d(input,
+                                  weight,
+                                  stride=stride,
+                                  padding=padding,
+                                  output_padding=output_padding,
+                                  groups=groups,
+                                  dilation=dilation)
+    else:
+        return F.conv_transpose1d(input,
+                                  weight,
+                                  stride=stride,
+                                  padding=padding,
+                                  output_padding=output_padding,
+                                  groups=groups,
+                                  dilation=dilation) + bias.reshape((-1, 1))
+
+
+@register_tracer_impl(F.conv_transpose2d, name='_bias_addition_impl')
+def conv_transpose2d_impl(input,
+                          weight,
+                          bias=None,
+                          stride=_pair(1),
+                          padding=_pair(0),
+                          output_padding=_pair(0),
+                          groups=1,
+                          dilation=_pair(1)):
+    if bias is None:
+        return F.conv_transpose2d(input,
+                                  weight,
+                                  stride=stride,
+                                  padding=padding,
+                                  output_padding=output_padding,
+                                  groups=groups,
+                                  dilation=dilation)
+    else:
+        return F.conv_transpose2d(input,
+                                  weight,
+                                  stride=stride,
+                                  padding=padding,
+                                  output_padding=output_padding,
+                                  groups=groups,
+                                  dilation=dilation) + bias.reshape((-1, 1, 1))
+
+
+@register_tracer_impl(F.conv_transpose3d, name='_bias_addition_impl')
+def conv_transpose3d_impl(input,
+                          weight,
+                          bias=None,
+                          stride=_triple(1),
+                          padding=_triple(0),
+                          output_padding=_triple(0),
+                          groups=1,
+                          dilation=_triple(1)):
+    if bias is None:
+        return F.conv_transpose3d(input,
+                                  weight,
+                                  stride=stride,
+                                  padding=padding,
+                                  output_padding=output_padding,
+                                  groups=groups,
+                                  dilation=dilation)
+    else:
+        return F.conv_transpose3d(input,
+                                  weight,
+                                  stride=stride,
+                                  padding=padding,
+                                  output_padding=output_padding,
+                                  groups=groups,
+                                  dilation=dilation) + bias.reshape((-1, 1, 1, 1))
+
+
 @register_tracer_impl(torch.addmm, name='_bias_addition_impl')
 @register_tracer_impl(torch.Tensor.addmm, name='_bias_addition_impl')
 def addmm_impl(input, mat1, mat2, beta=1, alpha=1):

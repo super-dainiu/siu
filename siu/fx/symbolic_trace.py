@@ -195,10 +195,9 @@ class ColoTracer(Tracer):
         torch.nn.Conv1d,
         torch.nn.Conv2d,
         torch.nn.Conv3d,
-    # torch.nn.ConvTranspose1d,
-    # torch.nn.ConvTranspose2d,
-    # torch.nn.ConvTranspose3d,
-    # torch.nn.Bilinear,
+        torch.nn.ConvTranspose1d,
+        torch.nn.ConvTranspose2d,
+        torch.nn.ConvTranspose3d,
     ]
 
     def __init__(self, trace_act_ckpt: bool = False, bias_addition_split: bool = False, *args, **kwargs):
