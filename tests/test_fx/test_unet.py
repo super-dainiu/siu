@@ -12,12 +12,37 @@ IN_CHANNELS = 3
 LATENTS_SHAPE = (BATCH_SIZE, IN_CHANNELS, HEIGHT // 7, WIDTH // 7)
 TIME_STEP = 50
 
-ARG_LIST = [
+VAE_ARG_LIST = [
+    (diffusers.AutoencoderKL, LATENTS_SHAPE),
+    (diffusers.VQModel, LATENTS_SHAPE),
+]
+
+
+@pytest.mark.parametrize('m, shape', VAE_ARG_LIST)
+def test_vae(m, shape):
+
+    model = m()
+    sample = torch.zeros(shape)
+
+    gm = symbolic_trace(model, meta_args={'sample': sample})
+
+    model.eval()
+    gm.eval()
+
+    with torch.no_grad():
+        fx_out = gm(sample)
+        non_fx_out = model(sample)
+    assert torch.allclose(
+        fx_out['sample'],
+        non_fx_out['sample']), f'{model.__class__.__name__} has inconsistent outputs, {fx_out} vs {non_fx_out}'
+
+
+UNET_ARG_LIST = [
     (diffusers.UNet2DModel, LATENTS_SHAPE, TIME_STEP),
 ]
 
 
-@pytest.mark.parametrize('m, shape, timestep', ARG_LIST)
+@pytest.mark.parametrize('m, shape, timestep', UNET_ARG_LIST)
 def test_unet(m, shape, timestep):
     model = m()
     sample = torch.zeros(shape)
@@ -36,4 +61,5 @@ def test_unet(m, shape, timestep):
 
 
 if __name__ == "__main__":
-    test_unet(*ARG_LIST[1])
+    test_vae(*VAE_ARG_LIST[1])
+    test_unet(*UNET_ARG_LIST[0])

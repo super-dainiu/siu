@@ -55,7 +55,7 @@ class MetaTensor(torch.Tensor):
             storage_offset=elem.storage_offset(),
             dtype=elem.dtype,
             layout=elem.layout,
-            device=device if device is not None else torch.device('cpu'),
+            device=device or (elem.device if elem.device.type != 'meta' else torch.device('cpu')),
             requires_grad=elem.requires_grad)    # deceive the frontend for aten selections
         r._tensor = elem
         # ...the real tensor is held as an element on the tensor.
