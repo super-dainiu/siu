@@ -21,6 +21,7 @@ Argument = Optional[Union[Tuple[Any, ...],    # actually Argument, but mypy can'
                           Dict[str, Any],    # actually Argument
                           slice,    # Slice[Argument, Argument, Argument], but slice is not a templated type in typing
                           'Node',]]
+zeros = torch.zeros
 
 
 def _truncate_suffix(s: str):
@@ -104,7 +105,7 @@ class ColoProxy(Proxy):
         try:
             return int(self.meta_data)
         except:
-            return torch.zeros(self.meta_data.shape, dtype=torch.bool).numpy().__index__()
+            return zeros(self.meta_data.shape, dtype=torch.bool).numpy().__index__()
 
     def __float__(self):
         return float(self.meta_data)
