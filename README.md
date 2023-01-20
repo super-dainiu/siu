@@ -6,7 +6,8 @@ This repo is somehow the minimal implementation of Colossal-AI FX. Features incl
 - Robust Activation Checkpoint Tracing / CodeGen
 - Support ``MetaTensorMode``
 - Shape Inference Across Device and Unified ``MetaInfo``
-- (TODO) Minimal Bias-Addition Split
+- Minimal Bias-Addition Split
+- Ideal Flop Counter https://dev-discuss.pytorch.org/t/the-ideal-pytorch-flop-counter-with-torch-dispatch/505
 - (TODO) Minimal Profiling for Solvers
 
 # Install
