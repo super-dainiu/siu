@@ -26,6 +26,8 @@ zeros = torch.zeros
 
 def _truncate_suffix(s: str):
     import re
+
+    # FIXME: don't know why but torch.fx always gets a suffix like '_1' in the name
     return re.sub(r'_\d+$', '', s)
 
 
@@ -211,6 +213,9 @@ class ColoTracer(Tracer):
         self.ckpt_regions = []
         self.ckpt_idx = 0
 
+        # the tracer will record the directory of submodules
+        self.mod_dir = []
+
         # whether the tracer should split the bias_add ops into two ops
         self.bias_addition_split = bias_addition_split
 
@@ -223,6 +228,13 @@ class ColoTracer(Tracer):
         # user can specify which modules are leaf modules and which are not
         return (type(m) not in self._custom_non_leaf_module
                 and (type(m) in self._custom_leaf_module or super().is_leaf_module(m, module_qualified_name)))
+
+    def call_module(self, m: torch.nn.Module, forward: Callable[..., Any], args: Tuple[Any, ...],
+                    kwargs: Dict[str, Any]) -> Any:
+        self.mod_dir.append(type(m).__name__)
+        rst = super().call_module(m, forward, args, kwargs)
+        self.mod_dir.pop()
+        return rst
 
     def proxy(self, node: Node) -> 'ColoProxy':
         return ColoProxy(node, self)
@@ -275,7 +287,7 @@ class ColoTracer(Tracer):
 
     def create_node(self, *args, **kwargs) -> Node:
         node = super().create_node(*args, **kwargs)
-        n_info = MetaInfo(node, to_recompute=tuple(self.ckpt_regions))
+        n_info = MetaInfo(node, mod_dir=tuple(self.mod_dir), to_recompute=tuple(self.ckpt_regions))
         return node
 
     def trace(self,
@@ -308,7 +320,9 @@ class ColoTracer(Tracer):
         self.meta_args = meta_args
 
         with _TorchTensorOverride(self), self._tracer_override():
+            self.mod_dir.append(root.__class__.__name__)
             self.graph = super().trace(root, concrete_args=concrete_args)
+            self.mod_dir.pop()
         self.graph.lint()
         return self.graph
 

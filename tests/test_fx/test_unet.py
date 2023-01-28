@@ -13,18 +13,18 @@ LATENTS_SHAPE = (BATCH_SIZE, IN_CHANNELS, HEIGHT // 7, WIDTH // 7)
 TIME_STEP = 50
 
 VAE_ARG_LIST = [
-    (diffusers.AutoencoderKL, LATENTS_SHAPE),
-    (diffusers.VQModel, LATENTS_SHAPE),
+    (diffusers.AutoencoderKL, LATENTS_SHAPE, {}),
+    (diffusers.VQModel, LATENTS_SHAPE, {}),
 ]
 
 
-@pytest.mark.parametrize('m, shape', VAE_ARG_LIST)
-def test_vae(m, shape):
+@pytest.mark.parametrize('m, shape, kwargs', VAE_ARG_LIST)
+def test_vae(m, shape, kwargs):
 
     model = m()
     sample = torch.zeros(shape)
 
-    gm = symbolic_trace(model, meta_args={'sample': sample})
+    gm = symbolic_trace(model, meta_args={'sample': sample}, concrete_args=kwargs)
 
     model.eval()
     gm.eval()

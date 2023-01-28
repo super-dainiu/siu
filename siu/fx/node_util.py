@@ -15,19 +15,22 @@ class MetaInfo:
     needed for auto-parallel system in Colossal-AI.
     ============================================================================
                             -------------------------------
-                            |          FX.Node            |
-    [fwd_input] are    ---> | [fwd_inp]         [bwd_buf] |    <-----
-    placeholders saved for  |     | \__________     |     |
-    backward.               |     |            \    |     |
-                            | [fwd_buf] ------> [bwd_buf] |    <-----
-                            |     |  \_________     |     |    [bwd_buffer] marks the peak
+                            |          FX.Node            |    <-----
+    [input/param] are  ---> |[input/param]      [grad_inp]|    [grad_inp] contributes to the
+    placeholders (might be  |     | \__________     |     |    profiled peak memory in backward
+    saved for backward.     |     |            \    |     |    pass. [grad_param] is calculated
+                            |     |             \   |     |    separately.
+                            | [interm] -------> [grad_int]|    <-----
+                            |     |  \_________     |     |    [grad_interm] marks the peak
                             |    / \           \    |     |    memory in backward pass.
-    [x] is not counted ---> | [x]  [fwd_buf] -> [bwd_buf] |    <-----
-    in [fwd_buffer] because |          |  \_____    |     |
+    [x] is not counted ---> | [x]  [interm] --> [grad_int]|    <-----
+    in [interm] because     |          |  \_____    |     |
     it is not saved for     |          |        \   |     |
-    backward.               |      [activat]     \  |     |    <----- [activation] is potentially
-                            -------------------------------    [fwd_input] for the next node.
+    backward.               |      [output]      \  |     |    <----- [output] is potentially
+                            -------------------------------    [input] for the next node.
     ============================================================================
+
+    The
 
     Usage:
         >>> for node in graph.nodes:
@@ -42,19 +45,30 @@ class MetaInfo:
     # reference
     node: Node
 
+    # directory
+    mod_dir: Tuple[str] = ()
+
     # should be updated after each graph manipulation
     # ============================== Update ====================================
     # parameter and buffer within ``Node``
     parameters: Dict[str, torch.nn.Parameter] = field(default_factory=lambda: {})
     buffers: Dict[str, torch.Tensor] = field(default_factory=lambda: {})
 
-    # intermediate tensor as output
+    # output activation
     data: Tuple[torch.Tensor] = ()
 
-    # memory allocation
-    saved_fwd_input: Tuple[torch.Tensor] = ()
-    saved_fwd_buffer: Tuple[torch.Tensor] = ()    # [batchnorm (mean, var), relu (output), ...]
-    saved_bwd_buffer: Tuple[torch.Tensor] = ()
+    # memory allocation (mostly used in activation checkpointing)
+    fwd_storage: Dict[str, List[torch.Tensor]] = field(
+        default_factory=lambda: {
+            'input': [],    # contains only input that are saved for backward
+            'interm': [],    # [batchnorm (mean, var), relu (output), ...], all appear within this node
+            'output': [],    # output of this node / not necessarily saved for backward
+    # (relu output must be discarded by set operations)
+        })
+    bwd_storage: Dict[str, List[torch.Tensor]] = field(default_factory=lambda: {
+        'grad_input': [],
+        'grad_interm': [],    # left empty since it doesn't make much difference
+    })
 
     # compute cost
     fwd_flop: Optional[int] = 0
