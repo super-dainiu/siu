@@ -84,11 +84,12 @@ class ColoProxy(Proxy):
             proxy = impl(*args, **kwargs)
             cls._func_dispatch[orig_method] = impl
             return proxy
-        proxy = cls.from_torch_proxy(super().__torch_function__(orig_method, types, args, kwargs))
-        unwrap_fn = lambda p: p.meta_data if isinstance(p, ColoProxy) else p
-        if proxy.meta_data is None:
-            proxy.meta_data = orig_method(*tree_map(unwrap_fn, args), **tree_map(unwrap_fn, kwargs))
-        return proxy
+        else:
+            proxy = cls.from_torch_proxy(super().__torch_function__(orig_method, types, args, kwargs))
+            unwrap_fn = lambda p: p.meta_data if isinstance(p, ColoProxy) else p
+            if proxy.meta_data is None:
+                proxy.meta_data = orig_method(*tree_map(unwrap_fn, args), **tree_map(unwrap_fn, kwargs))
+            return proxy
 
     @classmethod
     def from_torch_proxy(cls, proxy: Proxy):
