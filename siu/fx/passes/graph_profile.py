@@ -42,8 +42,8 @@ class GraphProfile(torch.fx.Interpreter):
 
     def fetch_initial_env(self):
         initial_env = {}
-        for node in self.module.graph.nodes:
-            initial_env[node] = node.meta['info'].output
+        for n in self.module.graph.nodes:
+            initial_env[n] = MetaInfo(n).output
         return initial_env
 
     def propagate(self, *args):

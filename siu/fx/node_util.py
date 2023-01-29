@@ -57,8 +57,9 @@ class MetaInfo:
     parameters: Dict[str, torch.nn.Parameter] = field(default_factory=lambda: {})
     buffers: Dict[str, torch.Tensor] = field(default_factory=lambda: {})
 
-    intermediate: Tuple[torch.Tensor] = ()
-    output: Tuple[torch.Tensor] = ()
+    inputs: Tuple[torch.Tensor] = ()
+    intermediates: Tuple[torch.Tensor] = ()
+    outputs: Tuple[torch.Tensor] = ()
 
     # compute cost
     fwd_flop: Optional[int] = 0

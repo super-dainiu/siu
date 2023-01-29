@@ -70,10 +70,13 @@ class ShapeProp(torch.fx.Interpreter):
 
     def run_node(self, n: torch.fx.Node) -> Any:
         """
-        Run a specific node ``n`` and return the result. Attach output to ``n``.
+        Run a specific node ``n`` and return the result. Attach
+        (
+            ``inputs``, ``outputs``, ``parameters``, ``buffers``
+        ) to ``n``.
 
         Args:
-            n (Node): The Node to execute
+            n (Node): The ``Node`` to execute
 
         Returns:
             Any: The result of executing ``n``
@@ -83,12 +86,13 @@ class ShapeProp(torch.fx.Interpreter):
 
         unwrap_fn = lambda elem: elem._tensor if isinstance(elem, MetaTensor) else elem
         n_info = MetaInfo(n)
-        n_info.output = tree_map(unwrap_fn, _normalize_tuple(r))
+        n_info.outputs = tree_map(unwrap_fn, _normalize_tuple(r))
 
         if n.op == 'call_module':
             submod = self.fetch_attr(n.target)
             n_info.parameters.update({k: v.to(torch.device('meta')) for k, v in submod.named_parameters()})
             n_info.buffers.update({k: v.to(torch.device('meta')) for k, v in submod.named_buffers()})
+            n_info.inputs
         else:
             # fix-me: ``nn.Parameter`` cannot be ``kwargs``?
             n_info.parameters.update(
