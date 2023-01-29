@@ -73,7 +73,7 @@ An important notice is that ``ShapeProp`` will attach additional information to 
 
 #### GraphProfile
 ``GraphProfile`` executes at the node level, and profiles both forward and backward within one node. However, the drawbacks of FX is that not every ``call_function`` saves its input for backward, and different tensor that flows within one FX.Graph can actually have the same layout. This raises problems for fine-grained profiling.
-![image](https://user-images.githubusercontent.com/78588128/211300536-bf78bda4-1ec3-4b96-8f00-e067e5c6f343.png)
+
 ![image](https://user-images.githubusercontent.com/78588128/215312957-7eb6cbc3-61b2-49cf-95a4-6b859149eb8d.png)
 
 To address this problem, I came up with a simulated environment enabled by ``torch.autograd.graph.saved_tensor_hooks`` and fake ``data_ptr``.
@@ -91,3 +91,5 @@ class sim_env(saved_tensors_hooks):
         return tensor
 ```
 The global_env variable will keep track of all saved tensors with a unique identifier.
+
+![image](https://user-images.githubusercontent.com/78588128/211300536-bf78bda4-1ec3-4b96-8f00-e067e5c6f343.png)
