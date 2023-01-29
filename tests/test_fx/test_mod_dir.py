@@ -46,11 +46,14 @@ class AModel(torch.nn.Module):
 
     def __init__(self, bias) -> None:
         super().__init__()
-        self.linear = LinearModel(3, 3, bias)
+        self.linear_1 = LinearModel(3, 3, bias)
+        self.linear_2 = LinearModel(3, 3, bias)
         self.conv = ConvModel(3, 6, 3, bias)
 
     def forward(self, x):
-        x = self.linear(x)
+        for i in range(x.shape[0]):
+            x = self.linear_1(x)
+            x = self.linear_2(x)
         x = self.conv(x)
         return x
 

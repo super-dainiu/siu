@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Ty
 import torch
 import torch.nn as nn
 from torch.fx import Graph, Node, Proxy, Tracer
+from torch.fx.graph import _Namespace
 from torch.utils._pytree import tree_map
 
 from siu._subclasses import MetaTensor, _TensorPropertyMethod, _TorchFactoryMethod
@@ -216,6 +217,7 @@ class ColoTracer(Tracer):
 
         # the tracer will record the directory of submodules
         self.mod_dir = []
+        self.mod_namespace = _Namespace()
 
         # whether the tracer should split the bias_add ops into two ops
         self.bias_addition_split = bias_addition_split
@@ -232,7 +234,7 @@ class ColoTracer(Tracer):
 
     def call_module(self, m: torch.nn.Module, forward: Callable[..., Any], args: Tuple[Any, ...],
                     kwargs: Dict[str, Any]) -> Any:
-        self.mod_dir.append(type(m).__name__)
+        self.mod_dir.append(self.mod_namespace.create_name(type(m).__name__, None))
         rst = super().call_module(m, forward, args, kwargs)
         self.mod_dir.pop()
         return rst
