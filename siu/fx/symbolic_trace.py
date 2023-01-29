@@ -53,12 +53,21 @@ def register_tracer_impl(func: Callable[..., Any], name: Optional[str] = '_custo
     return wrapper
 
 
+def register_leaf_module_impl(module: nn.Module):
+
+    def wrapper(impl):
+        ColoTracer._custom_leaf_module_impl[module] = impl
+        return impl
+
+    return wrapper
+
+
 def register_leaf_module(module: nn.Module):
-    ColoTracer._custom_leaf_module.add(type(module))
+    ColoTracer._custom_leaf_module.add(module)
 
 
 def register_non_leaf_module(module: nn.Module):
-    ColoTracer._custom_non_leaf_module.add(type(module))
+    ColoTracer._custom_non_leaf_module.add(module)
 
 
 class ColoProxy(Proxy):
@@ -192,6 +201,7 @@ class ColoAttribute(ColoProxy):
 
 class ColoTracer(Tracer):
     _custom_leaf_module: Set[Type[nn.Module]] = set()
+    _custom_leaf_module_impl: Dict[Type[nn.Module], Callable[..., Any]] = {}
     _custom_non_leaf_module: Set[Type[nn.Module]] = set()
     _custom_impl: Dict[Callable[..., Any], Callable[..., Any]] = {}
     _bias_addition_impl: Dict[Callable[..., Any], Callable[..., Any]] = {}
@@ -283,7 +293,9 @@ class ColoTracer(Tracer):
             mod = self.root.get_submodule(target)
             self.disable_module_getattr = True
             try:
-                proxy.meta_data = mod.forward(*tree_map(unwrap_fn, args), **tree_map(unwrap_fn, kwargs))
+                proxy.meta_data = self._custom_leaf_module_impl.get(type(mod),
+                                                                    mod.forward)(*tree_map(unwrap_fn, args),
+                                                                                 **tree_map(unwrap_fn, kwargs))
             finally:
                 self.disable_module_getattr = False
         return proxy
@@ -351,7 +363,6 @@ class ColoTracer(Tracer):
         # override the bias addition functions
         if self.bias_addition_split:
             ColoProxy._func_dispatch.update({k: v for k, v in self._bias_addition_impl.items()})
-            ColoTracer
 
         yield
 
