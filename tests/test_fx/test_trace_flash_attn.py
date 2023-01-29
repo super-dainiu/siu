@@ -14,7 +14,7 @@ def flash_attn_shape_impl(qkv, key_padding_mask=None, causal=False, cu_seqlens=N
     if key_padding_mask is None:
         return qkv.new_empty((qkv.shape[0], qkv.shape[1], qkv.shape[3], qkv.shape[4])), None
     else:
-        return qkv.new_empty((qkv.shape[0], qkv.shape[1] // 3, qkv.shape[2], qkv.shape[3])), None
+        raise NotImplementedError
 
 
 @register_leaf_module_impl(MixedFusedLayerNorm)
