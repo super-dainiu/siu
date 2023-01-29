@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 import colossalai
 import torch
+from colossalai.fx._compatibility import compatibility
 from torch.fx.graph import (
     CodeGen,
     PythonCode,
@@ -236,6 +237,7 @@ def emit_code_with_activation_checkpoint(body, ckpt_func, nodes, emit_node_func,
             node_idx += 1
 
 
+@compatibility(is_backward_compatible=True)
 class ActivationCheckpointCodeGen(CodeGen):
 
     def _gen_python_code(self, nodes, root_module: str, namespace: _Namespace) -> PythonCode:

@@ -45,6 +45,7 @@ _DistCommMethod = [
 
 _AliasATen = [
     aten.detach.default,
+    aten.detach_.default,
     aten.t.default,
     aten.transpose.int,
     aten.view.default,

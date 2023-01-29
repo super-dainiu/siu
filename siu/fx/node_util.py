@@ -48,27 +48,17 @@ class MetaInfo:
     # directory
     mod_dir: Tuple[str] = ()
 
+    # env
+    global_env: set = field(default_factory=set)
+
     # should be updated after each graph manipulation
     # ============================== Update ====================================
     # parameter and buffer within ``Node``
     parameters: Dict[str, torch.nn.Parameter] = field(default_factory=lambda: {})
     buffers: Dict[str, torch.Tensor] = field(default_factory=lambda: {})
 
-    # output activation
-    data: Tuple[torch.Tensor] = ()
-
-    # memory allocation (mostly used in activation checkpointing)
-    fwd_storage: Dict[str, List[torch.Tensor]] = field(
-        default_factory=lambda: {
-            'input': [],    # contains only input that are saved for backward
-            'interm': [],    # [batchnorm (mean, var), relu (output), ...], all appear within this node
-            'output': [],    # output of this node / not necessarily saved for backward
-    # (relu output must be discarded by set operations)
-        })
-    bwd_storage: Dict[str, List[torch.Tensor]] = field(default_factory=lambda: {
-        'grad_input': [],
-        'grad_interm': [],    # left empty since it doesn't make much difference
-    })
+    intermediate: Tuple[torch.Tensor] = ()
+    output: Tuple[torch.Tensor] = ()
 
     # compute cost
     fwd_flop: Optional[int] = 0

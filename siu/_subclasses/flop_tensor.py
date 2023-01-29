@@ -5,9 +5,10 @@
 import operator
 from collections import defaultdict
 from contextlib import contextmanager
+from enum import Enum, auto
 from functools import partial, reduce
 from numbers import Number
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch.utils._pytree import tree_map
@@ -15,6 +16,11 @@ from torch.utils._pytree import tree_map
 from .meta_tensor import MetaTensor
 
 aten = torch.ops.aten
+
+
+class Phase(Enum):
+    FWD = auto()
+    BWD = auto()
 
 
 def normalize_tuple(x):
@@ -40,7 +46,7 @@ def _format_flops(flop):
         return f'{flop / T:.2f}T'
 
 
-def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
+def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: bool = False, **kwargs) -> Number:
     """
     Count the number of floating point operations in a model.
     Ideas from https://pastebin.com/AkvAyJBw.
@@ -48,14 +54,37 @@ def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
         module (torch.nn.Module): A PyTorch model.
         *args: Input arguments to the model.
         verbose (bool): If True, print the number of flops for each module.
+        **kwargs: Input keyword arguments to the model.
 
     Returns:
-        Number: The total number of floating point operations.
+        Number: The total number of floating point operations (FWD + BWD).
     """
 
-    total_flop_count = 0
+    class DummyModule(torch.nn.Module):
+
+        def __init__(self, func):
+            super().__init__()
+            self.func = func
+
+        def forward(self, *args, **kwargs):
+
+            def detach_variables(x):
+                if isinstance(x, torch.Tensor):
+                    requires_grad = x.requires_grad
+                    x = x.detach()
+                    x.requires_grad = requires_grad
+                return x
+
+            args = tree_map(detach_variables, args)
+            kwargs = tree_map(detach_variables, kwargs)
+            if 'inplace' in kwargs:
+                kwargs['inplace'] = False
+            return self.func(*args, **kwargs)
+
+    total_flop_count = {Phase.FWD: 0, Phase.BWD: 0}
     flop_counts = defaultdict(lambda: defaultdict(int))
     parents = ['Global']
+    module = module if isinstance(module, torch.nn.Module) else DummyModule(module)
 
     class FlopTensor(MetaTensor):
         elem: torch.Tensor
@@ -79,7 +108,7 @@ def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
                 flop_count = flop_mapping[func](args, outs)
                 for par in parents:
                     flop_counts[par][func.__name__] += flop_count
-                total_flop_count += flop_count
+                total_flop_count[cur_phase] += flop_count
 
             def wrap(x):
                 if isinstance(x, MetaTensor):
@@ -89,6 +118,9 @@ def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
             rs = tree_map(wrap, rs)
 
             return rs
+
+    def is_autogradable(x):
+        return isinstance(x, torch.Tensor) and x.is_floating_point()
 
     def create_backwards_push(name):
 
@@ -161,6 +193,15 @@ def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
         for handle in registered:
             handle.remove()
 
+    @contextmanager
+    def avoid_module_inplace(mod):
+        if hasattr(mod, 'inplace'):
+            inplace = mod.inplace
+            mod.inplace = False
+        yield
+        if hasattr(mod, 'inplace'):
+            mod.inplace = inplace
+
     def display_flops():
         for mod in flop_counts.keys():
             print(f"Module: ", mod)
@@ -173,13 +214,22 @@ def flop_count(module: torch.nn.Module, *args, verbose: bool = False) -> Number:
             return FlopTensor(r)
         return r
 
-    with instrument_module(module):
-        module(*tree_map(wrap, args)).sum().backward()
+    with instrument_module(module) and avoid_module_inplace(module):
+        cur_phase = Phase.FWD
+        rst = module(*tree_map(wrap, args), **tree_map(wrap, kwargs))
+        cur_phase = Phase.BWD
+
+        if any(map(lambda x: is_autogradable(x) and x.requires_grad, normalize_tuple(rst))):
+            grad = [torch.zeros_like(t) for t in normalize_tuple(rst)]
+            torch.autograd.backward(
+                rst,
+                grad,
+            )
 
     if verbose:
         display_flops()
 
-    return total_flop_count
+    return total_flop_count[Phase.FWD], total_flop_count[Phase.BWD]
 
 
 def matmul_flop_jit(inputs: List[Any], outputs: List[Any]) -> Number:
@@ -449,6 +499,9 @@ ewise_flop_aten = [
 
     # distribution
     aten.bernoulli_.float,
+
+    # where
+    aten.where.self,
 ]
 for op in ewise_flop_aten:
     flop_mapping[op] = ewise_flop_counter(1, 0)
@@ -481,7 +534,6 @@ zero_flop_aten = [
     aten.unbind.int,
     aten._unsafe_view.default,
     aten.view.default,
-    aten.where.self,
     aten.zero_.default,
     aten.zeros_like.default,
 ]

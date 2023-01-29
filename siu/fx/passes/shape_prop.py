@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, Tuple, Union
 
 import torch
 import torch.fx
+from colossalai.fx._compatibility import compatibility
 from torch.utils._pytree import tree_map
 
 from siu._subclasses import MetaTensor, MetaTensorMode
@@ -31,6 +32,7 @@ def register_shape_impl(func):
     return wrapper
 
 
+@compatibility(is_backward_compatible=False)
 class ShapeProp(torch.fx.Interpreter):
     """
     Execute an FX graph Node-by-Node and record the meta data of the result
@@ -68,7 +70,7 @@ class ShapeProp(torch.fx.Interpreter):
 
     def run_node(self, n: torch.fx.Node) -> Any:
         """
-        Run a specific node ``n`` and return the result. Attach 'data' to ``n``.
+        Run a specific node ``n`` and return the result. Attach output to ``n``.
 
         Args:
             n (Node): The Node to execute
@@ -81,7 +83,7 @@ class ShapeProp(torch.fx.Interpreter):
 
         unwrap_fn = lambda elem: elem._tensor if isinstance(elem, MetaTensor) else elem
         n_info = MetaInfo(n)
-        n_info.data = tree_map(unwrap_fn, _normalize_tuple(r))
+        n_info.output = tree_map(unwrap_fn, _normalize_tuple(r))
 
         if n.op == 'call_module':
             submod = self.fetch_attr(n.target)
@@ -96,14 +98,30 @@ class ShapeProp(torch.fx.Interpreter):
                 }
             )
 
-        # TODO(you): Remove this once SPMD Solver is refactored.
         n._meta_data = tree_map(unwrap_fn, _normalize_tuple(r))
         return r
 
     def call_function(self, target: 'Target', args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> Any:
+        """
+        Execute a ``call_function`` node and return the result.
+        If the target of ``Node`` is registered with ``@register_shape_impl``,
+        the registered function will be used to execute the node. This is common
+        if we insert some customized kernels.
+
+        Args:
+            target (Target): The call target for this node. See
+                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
+                details on semantics
+            args (Tuple): Tuple of positional args for this invocation
+            kwargs (Dict): Dict of keyword arguments for this invocation
+
+        Return
+            Any: The value returned by the function invocation
+        """
         if target in self._custom_dispatch_func:
             return self._custom_dispatch_func[target](*args, **kwargs)
-        return super().call_function(target, args, kwargs)
+        else:
+            return super().call_function(target, args, kwargs)
 
     def propagate(self, *args, device=None):
         """
