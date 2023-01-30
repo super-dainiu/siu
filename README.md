@@ -71,6 +71,8 @@ gm = symbolic_trace(model, meta_args=meta_args)
 gm = symbolic_profile(gm, sample)
 ```
 
+``symbolic_profile`` is enabled by ``ShapeProp`` and ``GraphProfile``.
+
 #### ShapeProp
 Both Tensor Parallel and Activation Checkpoint solvers need to know the shape information ahead of time. Unlike PyTorch's implementation, this ``ShapeProp`` can be executed under MetaTensorMode. With this, all the preparation for auto-parallel solvers can be done in milliseconds.
 
