@@ -56,7 +56,19 @@ With ``MetaTensor``, the computation during shape propagation can be virtualized
 #### Remarks
 There is no free lunch for PyTorch to unify all operands in both its repo and other repos in its eco-system. For example, the einops library currently has no intention to support torch.FX (See https://github.com/arogozhnikov/einops/issues/188). To support different PyTorch-based libraries without modifying source code, good practices can be to allow users to register their implementation to substitute the functions not supported by torch.FX, or to avoid entering incompatible submodules.
 
-### siu.fx.symbolic_profile
+### siu.fx.symbolic_profile()
+```python
+```
+with MetaTensorMode():
+    model = MyModule().cuda()
+    sample = torch.rand(100, 3, 224, 224).cuda()
+meta_args = dict(
+    x = sample,
+)
+gm = symbolic_trace(model, meta_args=meta_args)
+gm = symbolic_profile(gm, sample)
+```
+
 #### ShapeProp
 ``ShapeProp`` is another important feature of Colossal-AI's auto-parallel system. Both Tensor Parallel and Activation Checkpoint solvers need to know the shape information ahead of time. Unlike PyTorch's implementation, this ``ShapeProp`` can be executed under MetaTensorMode. With this, all the preparation for auto-parallel solvers can be done in milliseconds.
 
@@ -82,15 +94,15 @@ class sim_env(saved_tensors_hooks):
 
     def __init__(self):
         super().__init__(self.pack_hook, self.unpack_hook)
-        self.cache = {}
+        self.ctx = {}
 
     def pack_hook(self, tensor: torch.Tensor):
-        self.cache[tensor.data_ptr()] = tensor.unwrap() if hasattr(tensor, 'unwrap') else tensor
+        self.ctx[tensor.data_ptr()] = tensor._tensor if hasattr(tensor, '_tensor') else tensor
         return tensor
 
     def unpack_hook(self, tensor):
         return tensor
 ```
-The ``cache`` variable will keep track of all saved tensors with a unique identifier.
+The ``ctx`` variable will keep track of all saved tensors with a unique identifier.
 
 ![image](https://user-images.githubusercontent.com/78588128/211300536-bf78bda4-1ec3-4b96-8f00-e067e5c6f343.png)
