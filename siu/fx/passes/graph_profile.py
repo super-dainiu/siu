@@ -122,6 +122,9 @@ class GraphProfile(torch.fx.Interpreter):
 
         Returns:
             Any: The output of the node
+
+        Raises:
+            RuntimeError: If the node is not profileable.
         """
         args, kwargs = self.fetch_args_kwargs_from_env(n)
         n_info = MetaInfo(n)
@@ -138,7 +141,9 @@ class GraphProfile(torch.fx.Interpreter):
                 n_info.local_ctx = inner_hook.ctx
                 self.ctx.update(inner_hook.ctx)
             except Exception as e:
-                raise RuntimeError(f'Error occurred when profiling node {n}, node.target = {n.target}') from e
+                raise RuntimeError(
+                    f'Error occurred when profiling node {n}, node.target = {n.target}. Please refer to function\'s docstring to register the relevant profile_impl for this node!'
+                ) from e
         n_info.global_ctx = self.ctx
         return denormalize_tuple(n_info.outputs)
 
