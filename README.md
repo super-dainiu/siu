@@ -5,9 +5,9 @@ This repo is somehow the minimal implementation of Colossal-AI FX. Features incl
 - symbolic_trace()
   - Robust Control-flow Tracing / Recompile
   - Robust Activation Checkpoint Tracing / CodeGen
-  - Minimal Bias-Addition Split
+  - Easy-to-define Bias-Addition Split
 - symbolic_profile()
-  - Support ``MetaTensorMode``
+  - Support ``MetaTensorMode``, where all Tensor operations are executed symbolically.
   - Shape Inference Across Device and Unified ``MetaInfo``
   - Ideal Flop Counter https://dev-discuss.pytorch.org/t/the-ideal-pytorch-flop-counter-with-torch-dispatch/505
 
