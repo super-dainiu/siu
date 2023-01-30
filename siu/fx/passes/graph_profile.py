@@ -126,16 +126,19 @@ class GraphProfile(torch.fx.Interpreter):
         args, kwargs = self.fetch_args_kwargs_from_env(n)
         n_info = MetaInfo(n)
         if n.op in self._profileable:
-            inner_hook = sim_env()
-            with inner_hook:
-                (
-                    n_info.fwd_flop,
-                    n_info.bwd_flop,
-                    n_info.fwd_comm,
-                    n_info.bwd_comm,
-                ) = getattr(self, n.op)(n.target, args, kwargs)
-            n_info.local_ctx = inner_hook.ctx
-            self.ctx.update(inner_hook.ctx)
+            try:
+                inner_hook = sim_env()
+                with inner_hook:
+                    (
+                        n_info.fwd_flop,
+                        n_info.bwd_flop,
+                        n_info.fwd_comm,
+                        n_info.bwd_comm,
+                    ) = getattr(self, n.op)(n.target, args, kwargs)
+                n_info.local_ctx = inner_hook.ctx
+                self.ctx.update(inner_hook.ctx)
+            except Exception as e:
+                raise RuntimeError(f'Error occurred when profiling node {n}, node.target = {n.target}') from e
         n_info.global_ctx = self.ctx
         return denormalize_tuple(n_info.outputs)
 

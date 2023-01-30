@@ -40,5 +40,5 @@ def test_timm_profile(m):
 
 
 if __name__ == "__main__":
-    # test_torchvision_profile(tm.vit_b_16)
-    test_timm_profile(tm.alexnet)
+    test_torchvision_profile(tm.vit_b_16)
+    test_timm_profile(tmm.dm_nfnet_f0)
