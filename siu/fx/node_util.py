@@ -48,8 +48,10 @@ class MetaInfo:
     # directory
     mod_dir: Tuple[str] = ()
 
-    # env
-    global_env: set = field(default_factory=set)
+    # ctx[data_ptr] = Tensor
+    # mark the storage for ctx.save_for_backward
+    global_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # globally shared
+    local_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # within node
 
     # should be updated after each graph manipulation
     # ============================== Update ====================================
@@ -113,7 +115,17 @@ class MetaInfo:
 
     @property
     def size(self):
-        return compute_size_in_bytes(self.data)
+        return compute_size_in_bytes(self.outputs)
+
+    @property
+    def output_size(self):
+        """Used in CheckpointSolver"""
+        return
+
+    @property
+    def total_size(self):
+        """Used in CheckpointSolver"""
+        return
 
     def __repr__(self):
         s = f'Node {self.node.name}'

@@ -87,7 +87,7 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
     module = module if isinstance(module, torch.nn.Module) else DummyModule(module)
 
     class FlopTensor(MetaTensor):
-        elem: torch.Tensor
+        _tensor: torch.Tensor
 
         def __repr__(self):
             name = 'FlopParameter' if getattr(self, '_is_param', False) else 'FlopTensor'
@@ -217,10 +217,11 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
     with instrument_module(module) and avoid_module_inplace(module):
         cur_phase = Phase.FWD
         rst = module(*tree_map(wrap, args), **tree_map(wrap, kwargs))
+        rst = tuple(r for r in normalize_tuple(rst) if is_autogradable(r) and r.requires_grad)
         cur_phase = Phase.BWD
 
-        if any(map(lambda x: is_autogradable(x) and x.requires_grad, normalize_tuple(rst))):
-            grad = [torch.zeros_like(t) for t in normalize_tuple(rst)]
+        if rst:
+            grad = [torch.zeros_like(t) for t in rst]
             torch.autograd.backward(
                 rst,
                 grad,

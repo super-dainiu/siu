@@ -23,15 +23,6 @@ def _current_device(module):
     return next(module.parameters()).device
 
 
-def register_shape_impl(func):
-
-    def wrapper(impl):
-        ShapeProp._custom_dispatch_func[func] = impl
-        return impl
-
-    return wrapper
-
-
 @compatibility(is_backward_compatible=False)
 class ShapeProp(torch.fx.Interpreter):
     """
@@ -85,14 +76,15 @@ class ShapeProp(torch.fx.Interpreter):
         r = getattr(self, n.op)(n.target, args, kwargs)
 
         unwrap_fn = lambda elem: elem._tensor if isinstance(elem, MetaTensor) else elem
+        is_pure_tensor = lambda elem: isinstance(elem, MetaTensor) and not isinstance(elem, torch.nn.Parameter)
         n_info = MetaInfo(n)
-        n_info.outputs = tree_map(unwrap_fn, _normalize_tuple(r))
+        n_info.outputs = _normalize_tuple(r)
 
         if n.op == 'call_module':
             submod = self.fetch_attr(n.target)
             n_info.parameters.update({k: v.to(torch.device('meta')) for k, v in submod.named_parameters()})
             n_info.buffers.update({k: v.to(torch.device('meta')) for k, v in submod.named_buffers()})
-            n_info.inputs
+
         else:
             # fix-me: ``nn.Parameter`` cannot be ``kwargs``?
             n_info.parameters.update(
@@ -101,6 +93,9 @@ class ShapeProp(torch.fx.Interpreter):
                         if isinstance(k, torch.fx.Node) and isinstance(v, torch.nn.Parameter)
                 }
             )
+
+        n_info.inputs = tuple(v for v in args if is_pure_tensor(v)) + \
+                        tuple(v for v in kwargs.values() if is_pure_tensor(v))
 
         n._meta_data = tree_map(unwrap_fn, _normalize_tuple(r))
         return r
@@ -132,7 +127,7 @@ class ShapeProp(torch.fx.Interpreter):
         Run `module` via interpretation and return the result and record the
         shape of each node.
         Args:
-            *args (Tensor): the sample input.
+            *args (Tensor): The sample input.
         Returns:
             Any: The value returned from executing the Module
         """
@@ -141,6 +136,18 @@ class ShapeProp(torch.fx.Interpreter):
             return super().run(*tree_map(wrap_fn, args))
 
 
-def shape_prop_pass(module: torch.fx.GraphModule, *args):
+def shape_prop_pass(module: torch.fx.GraphModule, *args) -> torch.fx.GraphModule:
+    """
+    Run ``module`` via interpretation and return the result and record the
+    shape of each ``Node``.
+
+    Args:
+        module (GraphModule): The GraphModule to profile
+        *args (Any): The sample input
+
+    Returns:
+        GraphModule: The same GraphModule with shape information
+    """
+
     ShapeProp(module).propagate(*args, device=_current_device(module))
     return module

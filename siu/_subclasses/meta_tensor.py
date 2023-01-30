@@ -41,7 +41,7 @@ class MetaTensor(torch.Tensor):
     @staticmethod
     def __new__(cls, elem, device=None):
         # Avoid multiple wrapping
-        if isinstance(elem, MetaTensor):
+        while isinstance(elem, MetaTensor):
             device = elem.device if device is None else device
             elem = elem._tensor
 

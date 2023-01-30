@@ -6,17 +6,24 @@ from zoo import tm_models, tmm_models
 
 from siu._subclasses import MetaTensorMode
 from siu.fx import symbolic_trace
-from siu.fx.passes.shape_prop import register_shape_impl, shape_prop_pass
+from siu.fx.passes.shape_prop import shape_prop_pass
+from siu.fx.symbolic_profile import register_shape_impl
 
 
 def _check_gm_validity(gm: torch.fx.GraphModule):
     for node in gm.graph.nodes:
-        assert node.meta['info'].data, f'In {gm.__class__.__name__}, {node} has no activation.'
+        assert node.meta['info'].outputs, f'In {gm.__class__.__name__}, {node} has no output shape.'
+        if node.op in [
+        # 'call_module',    # can apply to params
+        # 'call_function',  # can apply to params
+        # 'call_method',    # can apply to params
+        ]:
+            assert node.meta['info'].inputs, f'In {gm.__class__.__name__}, {node} has no input shape.'
 
 
 @register_shape_impl(torch.nn.functional.linear)
 def linear_impl(*args, **kwargs):
-    print('siuuuu!')
+    assert True
     return torch.nn.functional.linear(*args, **kwargs)
 
 
