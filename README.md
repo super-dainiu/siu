@@ -105,8 +105,8 @@ class sim_env(saved_tensors_hooks):
 The ``ctx`` variable will keep track of all saved tensors with a unique identifier. For non-profileable nodes, you can add your customized profile rules to it.
 
 ```python
-@register_shape_impl(fuse_conv_bn)
-def fuse_conv_bn_shape_impl(*args, **kwargs):
+@register_profile_impl(fuse_conv_bn)
+def fuse_conv_bn_profile_impl(*args, **kwargs):
      # do something here
      return fwd_flop, bwd_flop, fwd_comm, bwd_comm
 ```
