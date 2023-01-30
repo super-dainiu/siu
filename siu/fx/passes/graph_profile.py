@@ -142,7 +142,8 @@ class GraphProfile(torch.fx.Interpreter):
                 self.ctx.update(inner_hook.ctx)
             except Exception as e:
                 raise RuntimeError(
-                    f'Error occurred when profiling node {n}, node.target = {n.target}. Please refer to function\'s docstring to register the relevant profile_impl for this node!'
+                    f'Error occurred when profiling node {n}, node.target = {n.target}. '\
+                    f'Please refer to function\'s docstring to register the relevant profile_impl for this node!'
                 ) from e
         n_info.global_ctx = self.ctx
         return denormalize_tuple(n_info.outputs)
