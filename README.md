@@ -58,7 +58,6 @@ There is no free lunch for PyTorch to unify all operands in both its repo and ot
 
 ### siu.fx.symbolic_profile()
 ```python
-```
 with MetaTensorMode():
     model = MyModule().cuda()
     sample = torch.rand(100, 3, 224, 224).cuda()
@@ -103,6 +102,13 @@ class sim_env(saved_tensors_hooks):
     def unpack_hook(self, tensor):
         return tensor
 ```
-The ``ctx`` variable will keep track of all saved tensors with a unique identifier.
+The ``ctx`` variable will keep track of all saved tensors with a unique identifier. For non-profileable nodes, you can add your customized profile rules to it.
+```
+```python
+@register_shape_impl(fuse_conv_bn)
+def fuse_conv_bn_shape_impl(*args, **kwargs):
+     # do something here
+     return fwd_flop, bwd_flop, fwd_comm, bwd_comm
+```
 
 ![image](https://user-images.githubusercontent.com/78588128/211300536-bf78bda4-1ec3-4b96-8f00-e067e5c6f343.png)
