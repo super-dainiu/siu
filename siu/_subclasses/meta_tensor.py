@@ -128,7 +128,7 @@ class MetaTensor(torch.Tensor):
             nonlocal device
             if isinstance(x, str) or isinstance(x, _device):
                 device = x
-                return 'meta'
+                return torch.device('meta')
             return x
 
         elem = self._tensor.to(*tree_map(replace, args), **tree_map(replace, kwargs))

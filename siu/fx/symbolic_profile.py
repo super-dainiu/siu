@@ -23,16 +23,17 @@ def register_shape_impl(func):
     return wrapper
 
 
-def symbolic_profile(module: GraphModule, *args) -> GraphModule:
+def symbolic_profile(module: GraphModule, *args, verbose=False) -> GraphModule:
     """Symbolically profile a model with sample inputs.
 
     Args:
         module (GraphModule): The module to be profiled
         args (Tuple): The sample inputs
+        verbose (bool): Whether to print the profiling result
 
     Returns:
         GraphModule: The profiled module
     """
     module = shape_prop_pass(module, *args)
-    module = graph_profile_pass(module, *args)
+    module = graph_profile_pass(module, *args, verbose=verbose)
     return module

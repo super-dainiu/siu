@@ -16,29 +16,29 @@ def _check_gm_validity(gm: torch.fx.GraphModule):
 @pytest.mark.parametrize('m', tm_models)
 def test_torchvision_profile(m):
     with MetaTensorMode():
-        model = m().cuda()
-        data = torch.rand(100, 3, 224, 224).cuda()
+        model = m()
+        data = torch.rand(100, 3, 224, 224)
     meta_args = {
         "x": data,
     }
     gm = symbolic_trace(model, meta_args=meta_args)
-    symbolic_profile(gm, data)
+    symbolic_profile(gm, data, verbose=True)
     _check_gm_validity(gm)
 
 
 @pytest.mark.parametrize('m', tmm_models)
 def test_timm_profile(m):
     with MetaTensorMode():
-        model = m().cuda()
-        data = torch.rand(100, 3, 224, 224).cuda()
+        model = m()
+        data = torch.rand(100, 3, 224, 224)
     meta_args = {
         "x": data,
     }
     gm = symbolic_trace(model, meta_args=meta_args)
-    symbolic_profile(gm, data)
+    symbolic_profile(gm, data, verbose=True)
     _check_gm_validity(gm)
 
 
 if __name__ == "__main__":
-    test_torchvision_profile(tm.vit_b_16)
-    test_timm_profile(tmm.dm_nfnet_f0)
+    test_torchvision_profile(tm.mobilenet_v2)
+    # test_timm_profile(tmm.dm_nfnet_f0)

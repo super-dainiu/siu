@@ -8,6 +8,18 @@ from torch.fx import Graph, GraphModule, Node
 from siu.envs import MeshConfig
 
 
+def intersect(a, b):
+    return {k: a[k] for k in a if k in b}
+
+
+def subtract(a, b):
+    return {k: a[k] for k in a if k not in b}
+
+
+def union(a, b):
+    return {**a, **b}
+
+
 @dataclass
 class MetaInfo:
     r"""
@@ -30,7 +42,9 @@ class MetaInfo:
                             -------------------------------    [input] for the next node.
     ============================================================================
 
-    The
+    Total Size = ([interm] in local_ctx)  + Output Size
+    Output Size = ([output] in global_ctx and not is_alias)
+    Backward Size = ([grad_inp])
 
     Usage:
         >>> for node in graph.nodes:
@@ -60,8 +74,8 @@ class MetaInfo:
     buffers: Dict[str, torch.Tensor] = field(default_factory=lambda: {})
 
     inputs: Tuple[torch.Tensor] = ()
-    intermediates: Tuple[torch.Tensor] = ()
     outputs: Tuple[torch.Tensor] = ()
+    is_alias: Tuple[bool] = ()    # whether the output is an alias of input
 
     # compute cost
     fwd_flop: Optional[int] = 0
@@ -114,30 +128,47 @@ class MetaInfo:
         return compute_size_in_bytes(self.buffers)
 
     @property
-    def size(self):
-        return compute_size_in_bytes(self.outputs)
-
-    @property
     def output_size(self):
         """Used in CheckpointSolver"""
-        return
+        print(self.node, self.node.target, self.outputs, self.is_alias)
+        output_ctx = {
+            o.data_ptr(): o
+            for o, is_alias in zip(self.outputs, self.is_alias)
+            if not is_alias and isinstance(o, torch.Tensor) and not isinstance(o, torch.nn.Parameter)
+        }
+        return compute_size_in_bytes(intersect(self.global_ctx, output_ctx))
 
     @property
     def total_size(self):
         """Used in CheckpointSolver"""
-        return
+        input_ctx = {i.data_ptr(): i for i in self.inputs}
+        local_ctx = subtract(self.local_ctx, input_ctx)
+        return compute_size_in_bytes(local_ctx) + self.output_size
+
+    @property
+    def backward_size(self):
+        """Used in CheckpointSolver"""
+        return compute_size_in_bytes(self.inputs)
 
     def __repr__(self):
         s = f'Node {self.node.name}'
         if self.parameters:
-            s += f'\n has parameter of size {_format_memory(self.param_size)}'
+            s += f'\n\thas parameter of size {_format_memory(self.param_size)}'
         if self.buffers:
-            s += f'\n has buffer of size {_format_memory(self.buffer_size)}'
-        if self.data:
-            s += f'\n has activation of size {_format_memory(self.size)}'
-        s += f'\n to_recompute = {self.to_recompute}'\
-            f'\n to_offload = {self.to_offload}'\
-            f'\n sharding_spec = {self.sharding_spec}'
+            s += f'\n\thas buffer of size {_format_memory(self.buffer_size)}'
+        if self.output_size:
+            s += f'\n\thas output activation of size {_format_memory(self.output_size)}'
+        if self.total_size:
+            s += f'\n\thas total activation of size {_format_memory(self.total_size)}'
+        if self.backward_size:
+            s += f'\n\thas backward activation of size {_format_memory(self.backward_size)}'
+        s += f'\n\tfwd_flop = {self.fwd_flop}'\
+            f'\n\tbwd_flop = {self.bwd_flop}'\
+            f'\n\tfwd_comm = {self.fwd_comm}'\
+            f'\n\tbwd_comm = {self.bwd_comm}'\
+            f'\n\tto_recompute = {self.to_recompute}'\
+            f'\n\tto_offload = {self.to_offload}'\
+            f'\n\tsharding_spec = {self.sharding_spec}'
         return s
 
 

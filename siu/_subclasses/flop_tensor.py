@@ -59,6 +59,7 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
     Returns:
         Number: The total number of floating point operations (FWD + BWD).
     """
+    inplace = False
 
     class DummyModule(torch.nn.Module):
 
@@ -78,6 +79,8 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
             args = tree_map(detach_variables, args)
             kwargs = tree_map(detach_variables, kwargs)
             if 'inplace' in kwargs:
+                nonlocal inplace
+                inplace = kwargs['inplace']
                 kwargs['inplace'] = False
             return self.func(*args, **kwargs)
 
@@ -101,7 +104,10 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
             # no_dispatch is only needed if you use enable_python_mode.
             # It prevents infinite recursion.
             rs = super().__torch_dispatch__(func, types, args, kwargs)
+
             outs = normalize_tuple(rs)
+            if inplace:
+                outs[0]._tensor.data_ptr = args[0]._tensor.data_ptr
 
             if func in flop_mapping:
                 nonlocal flop_counts, total_flop_count
@@ -196,6 +202,7 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
     @contextmanager
     def avoid_module_inplace(mod):
         if hasattr(mod, 'inplace'):
+            nonlocal inplace
             inplace = mod.inplace
             mod.inplace = False
         yield

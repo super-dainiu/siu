@@ -142,12 +142,12 @@ def addmm_impl(input, mat1, mat2, beta=1, alpha=1):
 
 @register_tracer_impl(torch.addbmm, name='_bias_addition_impl')
 @register_tracer_impl(torch.Tensor.addbmm, name='_bias_addition_impl')
-def addbmm_impl(input, batch1, batch2, beta=None, alpha=None):
-    if alpha is not None and beta is not None:
+def addbmm_impl(input, batch1, batch2, beta=1, alpha=1):
+    if alpha != 1 and beta != 1:
         return torch.bmm(batch1, batch2.transpose(1, 2)) * alpha + input * beta
-    elif alpha is not None:
+    elif alpha != 1:
         return torch.bmm(batch1, batch2.transpose(1, 2)) * alpha + input
-    elif beta is not None:
+    elif beta != 1:
         return torch.bmm(batch1, batch2.transpose(1, 2)) + input * beta
     else:
         return torch.bmm(batch1, batch2.transpose(1, 2)) + input

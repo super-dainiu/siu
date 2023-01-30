@@ -32,7 +32,7 @@ class ShapeProp(torch.fx.Interpreter):
     Usage:
         >>> model = MyModule()
         >>> x = torch.rand(10, 10)
-        >>> gm = colossalai.fx.symbolic_trace(model, meta_args = {'x': x}})
+        >>> gm = colossalai.fx.symbolic_trace(model, meta_args = {'x': x})
         >>> interp = ShapeProp(gm)
         >>> interp.propagate(x)
 

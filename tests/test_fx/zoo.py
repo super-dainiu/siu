@@ -3,6 +3,7 @@ import torchvision.models as tm
 
 # input shape: (batch_size, 3, 224, 224)
 tm_models = [
+    tm.alexnet,
     tm.convnext_base,
     tm.densenet121,
     tm.efficientnet_v2_s,
