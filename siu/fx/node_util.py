@@ -44,6 +44,7 @@ class MetaInfo:
 
     Total Size = ([interm] in local_ctx)  + Output Size
     Output Size = ([output] in global_ctx and not is_alias)
+    Temp Size = ([output] not in global_ctx and not is_alias)
     Backward Size = ([grad_inp])
 
     Usage:
@@ -130,7 +131,6 @@ class MetaInfo:
     @property
     def output_size(self):
         """Used in CheckpointSolver"""
-        print(self.node, self.node.target, self.outputs, self.is_alias)
         output_ctx = {
             o.data_ptr(): o
             for o, is_alias in zip(self.outputs, self.is_alias)
@@ -144,6 +144,16 @@ class MetaInfo:
         input_ctx = {i.data_ptr(): i for i in self.inputs}
         local_ctx = subtract(self.local_ctx, input_ctx)
         return compute_size_in_bytes(local_ctx) + self.output_size
+
+    @property
+    def temp_size(self):
+        """Used in CheckpointSolver"""
+        output_ctx = {
+            o.data_ptr(): o
+            for o, is_alias in zip(self.outputs, self.is_alias)
+            if not is_alias and isinstance(o, torch.Tensor) and not isinstance(o, torch.nn.Parameter)
+        }
+        return compute_size_in_bytes(subtract(output_ctx, self.global_ctx))
 
     @property
     def backward_size(self):
@@ -160,6 +170,8 @@ class MetaInfo:
             s += f'\n\thas output activation of size {_format_memory(self.output_size)}'
         if self.total_size:
             s += f'\n\thas total activation of size {_format_memory(self.total_size)}'
+        if self.temp_size:
+            s += f'\n\thas temp activation of size {_format_memory(self.temp_size)}'
         if self.backward_size:
             s += f'\n\thas backward activation of size {_format_memory(self.backward_size)}'
         s += f'\n\tfwd_flop = {self.fwd_flop}'\

@@ -281,6 +281,9 @@ class GraphProfile(torch.fx.Interpreter):
         Summarizes the profiled statistics of the `GraphModule` in
         tabular format. Note that this API requires the ``tabulate`` module
         to be installed.
+
+        Returns:
+            str: The summary of the profiled statistics
         """
         # https://github.com/pytorch/pytorch/blob/master/torch/fx/graph.py
         try:
@@ -301,6 +304,7 @@ class GraphProfile(torch.fx.Interpreter):
                 str(node),
                 _format_memory(n_info.total_size),
                 _format_memory(n_info.output_size),
+                _format_memory(n_info.temp_size),
                 _format_memory(n_info.param_size),
                 _format_memory(n_info.backward_size),
                 _format_flops(n_info.fwd_flop),
@@ -314,6 +318,7 @@ class GraphProfile(torch.fx.Interpreter):
             'Op',
             'Total size',
             'Output size',
+            'Temp size',
             'Param size',
             'Backward size',
             'Fwd FLOPs',
