@@ -46,3 +46,6 @@ def run_forward(gm: torch.fx.GraphModule, data_gen: Callable, num_steps: int):
         forward_mem += torch.cuda.memory_allocated(device="cuda:0") / num_steps
         del output
     return forward_mem, param_mem
+
+
+# TODO(syj): profile me
