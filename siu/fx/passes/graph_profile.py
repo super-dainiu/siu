@@ -25,13 +25,23 @@ def _format_flops(flops: float) -> str:
 
 
 class sim_env(saved_tensors_hooks):
+    """
+    A simulation of memory allocation and deallocation in the forward pass
+    using ``saved_tensor_hooks``.
+
+    Attributes:
+        ctx (Dict[int, torch.Tensor]): A dictionary that maps the
+            data pointer of a tensor to the tensor itself. This is used
+            to track the memory allocation and deallocation.
+    """
 
     def __init__(self):
         super().__init__(self.pack_hook, self.unpack_hook)
         self.ctx = {}
 
     def pack_hook(self, tensor: torch.Tensor):
-        self.ctx[tensor.data_ptr()] = tensor._tensor if hasattr(tensor, '_tensor') else tensor
+        if not isinstance(tensor, torch.nn.Parameter):
+            self.ctx[tensor.data_ptr()] = tensor
         return tensor
 
     def unpack_hook(self, tensor):
@@ -92,7 +102,7 @@ class GraphProfile(torch.fx.Interpreter):
 
     def __init__(self, module: GraphModule, garbage_collect_values: bool = True):
         super().__init__(module, garbage_collect_values)
-        self.ctx = {}
+        self.global_hook = sim_env()
 
     def run(self, *args, initial_env: Optional[Dict[Node, Any]] = None, enable_io_processing: bool = True) -> Any:
         """
@@ -151,7 +161,7 @@ class GraphProfile(torch.fx.Interpreter):
         if n.op in self._profileable:
             try:
                 inner_hook = sim_env()
-                with inner_hook:
+                with inner_hook, self.global_hook:
                     (
                         n_info.fwd_flop,
                         n_info.bwd_flop,
@@ -159,25 +169,19 @@ class GraphProfile(torch.fx.Interpreter):
                         n_info.bwd_comm,
                     ) = getattr(self, n.op)(n.target, args, kwargs)
                 n_info.local_ctx = inner_hook.ctx
-                self.ctx.update(inner_hook.ctx)
-                # from siu.fx.node_util import intersect, compute_size_in_bytes
-                # input_ctx = {i.data_ptr(): i for i in n_info.inputs if isinstance(i, torch.Tensor)}
-                # print(_format_memory(compute_size_in_bytes(input_ctx)))
-                # print(n, _format_memory(compute_size_in_bytes(inner_hook.ctx)))
-                # print(_format_memory(compute_size_in_bytes(intersect(input_ctx, self.ctx))))
-                # print(_format_memory(compute_size_in_bytes(intersect(input_ctx, inner_hook.ctx))))
             except Exception as e:
                 raise RuntimeError(
                     f'Error {str(e)} occurred when profiling node {n}, node.target = {n.target}. '\
                     f'Please refer to function\'s docstring to register the relevant profile_impl for this node!'
                 ) from e
-        n_info.global_ctx = self.ctx
+        n_info.global_ctx = self.global_hook.ctx
+        n_info.curr_ctx = self.global_hook.ctx.copy()
 
         # retain the autograd graph
         for param in self.module.parameters():
             param.grad = None
 
-        crit = lambda x: x.data_ptr() in self.ctx if isinstance(x, torch.Tensor) else False
+        crit = lambda x: x.data_ptr() in self.global_hook.ctx if isinstance(x, torch.Tensor) else False
         n_info.is_alias = _normalize_tuple(tree_map(crit, n_info.outputs))
         return _denormalize_tuple(n_info.outputs)
 

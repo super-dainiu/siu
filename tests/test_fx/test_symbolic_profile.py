@@ -17,7 +17,7 @@ def _check_gm_validity(gm: torch.fx.GraphModule):
 def test_torchvision_profile(m):
     with MetaTensorMode():
         model = m()
-        data = torch.rand(100, 3, 224, 224)
+        data = torch.rand(8, 3, 224, 224)
     meta_args = {
         "x": data,
     }
@@ -30,7 +30,7 @@ def test_torchvision_profile(m):
 def test_timm_profile(m):
     with MetaTensorMode():
         model = m()
-        data = torch.rand(100, 3, 224, 224)
+        data = torch.rand(8, 3, 224, 224)
     meta_args = {
         "x": data,
     }
@@ -40,5 +40,5 @@ def test_timm_profile(m):
 
 
 if __name__ == "__main__":
-    test_torchvision_profile(tm.mobilenet_v2)
+    test_torchvision_profile(tm.resnet18)
     # test_timm_profile(tmm.dm_nfnet_f0)

@@ -66,6 +66,7 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
         def __init__(self, func):
             super().__init__()
             self.func = func
+            self.__name__ = func.__name__
 
         def forward(self, *args, **kwargs):
 
@@ -106,8 +107,6 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
             rs = super().__torch_dispatch__(func, types, args, kwargs)
 
             outs = normalize_tuple(rs)
-            if inplace:
-                outs[0]._tensor.data_ptr = args[0]._tensor.data_ptr
 
             if func in flop_mapping:
                 nonlocal flop_counts, total_flop_count
@@ -119,6 +118,8 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
             def wrap(x):
                 if isinstance(x, MetaTensor):
                     x = FlopTensor(x)
+                    if inplace:
+                        x._tensor.data_ptr = args[0]._tensor.data_ptr
                 return x
 
             rs = tree_map(wrap, rs)
@@ -224,6 +225,7 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
     with instrument_module(module) and avoid_module_inplace(module):
         cur_phase = Phase.FWD
         rst = module(*tree_map(wrap, args), **tree_map(wrap, kwargs))
+        rst_cp = rst
         rst = tuple(r for r in normalize_tuple(rst) if is_autogradable(r) and r.requires_grad)
         cur_phase = Phase.BWD
 
@@ -233,6 +235,8 @@ def flop_count(module: Union[torch.nn.Module, Callable] = None, *args, verbose: 
                 rst,
                 grad,
             )
+        # else:
+        #     print(getattr(module, '__name__', module), rst_cp)
 
     if verbose:
         display_flops()

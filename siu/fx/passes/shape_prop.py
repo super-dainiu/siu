@@ -86,11 +86,16 @@ class ShapeProp(torch.fx.Interpreter):
             n_info.buffers.update({k: v.to(torch.device('meta')) for k, v in submod.named_buffers()})
 
         else:
-            # fix-me: ``nn.Parameter`` cannot be ``kwargs``?
             n_info.parameters.update(
                 {k.name: v.to(torch.device('meta')) \
                     for k, v in zip(n.args, args) \
                         if isinstance(k, torch.fx.Node) and isinstance(v, torch.nn.Parameter)
+                }
+            )
+            n_info.parameters.update(
+                {k: v.to(torch.device('meta')) \
+                    for k, v in kwargs.items() \
+                        if isinstance(v, torch.nn.Parameter)
                 }
             )
 

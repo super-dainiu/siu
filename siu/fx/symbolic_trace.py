@@ -225,9 +225,7 @@ class ColoTracer(Tracer):
         self.ckpt_regions = []
         self.ckpt_idx = 0
 
-        # the tracer will record the directory of submodules
-        self.mod_dir = []
-        self.mod_namespace = _Namespace()
+        self.mod_dir = ''
 
         # whether the tracer should split the bias_add ops into two ops
         self.bias_addition_split = bias_addition_split
@@ -244,9 +242,10 @@ class ColoTracer(Tracer):
 
     def call_module(self, m: torch.nn.Module, forward: Callable[..., Any], args: Tuple[Any, ...],
                     kwargs: Dict[str, Any]) -> Any:
-        self.mod_dir.append(self.mod_namespace.create_name(type(m).__name__, None))
+        curr_dir = self.mod_dir
+        self.mod_dir = 'self.' + self.path_of_module(m)
         rst = super().call_module(m, forward, args, kwargs)
-        self.mod_dir.pop()
+        self.mod_dir = curr_dir
         return rst
 
     def proxy(self, node: Node) -> 'ColoProxy':
@@ -302,7 +301,7 @@ class ColoTracer(Tracer):
 
     def create_node(self, *args, **kwargs) -> Node:
         node = super().create_node(*args, **kwargs)
-        n_info = MetaInfo(node, mod_dir=tuple(self.mod_dir), to_recompute=tuple(self.ckpt_regions))
+        n_info = MetaInfo(node, mod_dir=self.mod_dir, to_recompute=tuple(self.ckpt_regions))
         return node
 
     def trace(self,
@@ -335,9 +334,9 @@ class ColoTracer(Tracer):
         self.meta_args = meta_args
 
         with _TorchTensorOverride(self), self._tracer_override():
-            self.mod_dir.append(root.__class__.__name__)
+            self.mod_dir = 'self'
             self.graph = super().trace(root, concrete_args=concrete_args)
-            self.mod_dir.pop()
+            self.mod_dir = ''
         self.graph.lint()
         return self.graph
 
@@ -441,19 +440,22 @@ def symbolic_trace(
     trace_act_ckpt: bool = False,
     bias_addition_split: bool = False,
 ) -> ColoGraphModule:
+    is_training = root.training
+    root.eval()
     if meta_args:
         device, orig_device = _default_device(), _current_device(root)
         wrap_fn = lambda elem: MetaTensor(elem, device=device) if isinstance(elem, torch.Tensor) else elem
         graph = ColoTracer(trace_act_ckpt=trace_act_ckpt,
-                           bias_addition_split=bias_addition_split).trace(root.to(device, non_blocking=True),
+                           bias_addition_split=bias_addition_split).trace(root.to(device),
                                                                           concrete_args=concrete_args,
                                                                           meta_args=tree_map(wrap_fn, meta_args))
         if trace_act_ckpt:
             graph.set_codegen(ActivationCheckpointCodeGen())
-        root.to(orig_device, non_blocking=True)
+        root.to(orig_device)
     else:
         graph = Tracer().trace(root, concrete_args=concrete_args)
     name = root.__class__.__name__ if isinstance(root, torch.nn.Module) else root.__name__
+    root.train(is_training)
     return ColoGraphModule(root, graph, name)
 
 

@@ -42,7 +42,7 @@ class MetaInfo:
                             -------------------------------    [input] for the next node.
     ============================================================================
 
-    Total Size = ([interm] in local_ctx)  + Output Size
+    Total Size = ALL_PREVIOUS_CTX U {([interm] in local_ctx)  + Output Size}
     Output Size = ([output] in global_ctx and not is_alias)
     Temp Size = ([output] not in global_ctx and not is_alias)
     Backward Size = ([grad_inp])
@@ -61,12 +61,13 @@ class MetaInfo:
     node: Node
 
     # directory
-    mod_dir: Tuple[str] = ()
+    mod_dir: str = ''
 
     # ctx[data_ptr] = Tensor
     # mark the storage for ctx.save_for_backward
     global_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # globally shared
     local_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # within node
+    curr_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # global_ctx till this node
 
     # should be updated after each graph manipulation
     # ============================== Update ====================================
@@ -141,9 +142,7 @@ class MetaInfo:
     @property
     def total_size(self):
         """Used in CheckpointSolver"""
-        input_ctx = {i.data_ptr(): i for i in self.inputs}
-        local_ctx = subtract(self.local_ctx, input_ctx)
-        return compute_size_in_bytes(local_ctx) + self.output_size
+        return compute_size_in_bytes(self.curr_ctx)
 
     @property
     def temp_size(self):
