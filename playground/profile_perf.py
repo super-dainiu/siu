@@ -38,25 +38,26 @@ def run_forward(mod: torch.nn.Module, data_gen: Callable, num_steps: int, verbos
 
         # =====================================================
         if verbose and n == 0:
-            hook = sim_env()
+            hook = sim_env(mod)
             with hook:
                 output = mod(data)
             print(f'Memory estimation by saved_tensor_hooks: {_format_memory(compute_size_in_bytes(hook.ctx))}')
+            del hook
         # =====================================================
         else:
             output = mod(data)
         activation_mem += (torch.cuda.memory_allocated(device="cuda:0") - inner_mem) / num_steps
         del output
-        print(_format_memory(torch.cuda.memory_allocated(device="cuda:0")))
     return activation_mem, param_mem
 
 
-def symbolic_run_forward(mod: torch.nn.Module, data_gen: Callable, verbose=False):
+def symbolic_run_forward(mod: torch.nn.Module, data_gen: Callable, verbose=False, bias_addition_split=False):
     sample = data_gen('cuda:0')
-    gm = symbolic_trace(mod, meta_args={"x": sample})
+    gm = symbolic_trace(mod, meta_args={"x": sample}, bias_addition_split=bias_addition_split)
     gm = symbolic_profile(gm, sample, verbose=verbose)
-    activation_mem = list(gm.graph.nodes)[-1].meta['info'].total_size
+    activation_mem = list(gm.graph.nodes)[-1].meta['info'].accumulate_size
     param_mem = sum([n.meta['info'].param_size for n in gm.graph.nodes])
+    del gm
     return activation_mem, param_mem
 
 
@@ -75,13 +76,16 @@ def main(args):
                                                 args.num_steps,
                                                 verbose=args.verbose)
         sym_activation_mem, sym_param_mem = symbolic_run_forward(
-            mod, lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device))
+            mod,
+            lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device),
+            bias_addition_split=args.bias_addition_split)
         hist[m.__name__] = {
             'activation_mem': activation_mem,
             'param_mem': param_mem,
             'sym_activation_mem': sym_activation_mem,
             'sym_param_mem': sym_param_mem,
         }
+        mod.cpu()
         del mod
         if args.verbose:
             print(
@@ -103,13 +107,16 @@ def main(args):
                                                 args.num_steps,
                                                 verbose=args.verbose)
         sym_activation_mem, sym_param_mem = symbolic_run_forward(
-            mod, lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device))
+            mod,
+            lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device),
+            bias_addition_split=args.bias_addition_split)
         hist[m.__name__] = {
-            'forward_mem': activation_mem,
+            'activation_mem': activation_mem,
             'param_mem': param_mem,
-            'sym_forward_mem': sym_activation_mem,
+            'sym_activation_mem': sym_activation_mem,
             'sym_param_mem': sym_param_mem,
         }
+        mod.cpu()
         del mod
         if args.verbose:
             print(
@@ -135,12 +142,13 @@ def plot_result(hist, img_dir=None):
     df = df.rename(columns={'index': 'model'})
     df = df.melt(id_vars=['model'], var_name='type', value_name='memory')
     df['type'] = df['type'].str.replace('_mem', '')
-    df['type'] = df['type'].str.replace('sym_', 'symbolic_')
+    df['type'] = df['type'].str.replace('sym_', 'symbolic ')
     df['type'] = df['type'].str.replace('activation', 'activation memory')
     df['type'] = df['type'].str.replace('param', 'parameter memory')
 
     # save plot only don't show
     if img_dir is not None:
+        print(f'Saving plot to {img_dir}.png')
         plt.figure(figsize=(10, 6))
         sns.barplot(x='model', y='memory', hue='type', data=df)
         plt.xticks(rotation=90)
@@ -153,7 +161,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--img_dir', type=str, default='.', help='saved image directory')
     parser.add_argument('--batch_size', type=int, default=8, help='batch size')
-    parser.add_argument('--num_steps', type=int, default=1, help='number of steps')
+    parser.add_argument('--num_steps', type=int, default=5, help='number of steps')
     parser.add_argument('--verbose', action='store_true', help='verbose')
+    parser.add_argument('--bias_addition_split', action='store_true', help='split bias addition')
     args = parser.parse_args()
     main(args)

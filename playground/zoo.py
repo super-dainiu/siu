@@ -3,21 +3,21 @@ import torchvision.models as tm
 
 # input shape: (batch_size, 3, 224, 224)
 tm_models = [
-    # tm.alexnet,
-    # tm.convnext_base,
-    # tm.densenet121,
-    # tm.efficientnet_v2_s,
-    # # tm.googlenet,   # output bad case
-    # # tm.inception_v3,  # bad case
-    # tm.mobilenet_v2,
-    # tm.mobilenet_v3_small,
-    # tm.mnasnet0_5,
-    # tm.resnet18,
-    # tm.regnet_x_16gf,
-    # tm.resnext50_32x4d,
-    # tm.shufflenet_v2_x0_5,
-    # tm.squeezenet1_0,
-    # # tm.swin_s,  # fx bad case
+    tm.alexnet,
+    tm.convnext_base,
+    tm.densenet121,
+    tm.efficientnet_v2_s,
+    # tm.googlenet,   # output bad case
+    # tm.inception_v3,  # bad case
+    tm.mobilenet_v2,
+    tm.mobilenet_v3_small,
+    tm.mnasnet0_5,
+    tm.resnet18,
+    tm.regnet_x_16gf,
+    tm.resnext50_32x4d,
+    tm.shufflenet_v2_x0_5,
+    tm.squeezenet1_0,
+    # tm.swin_s,  # fx bad case
     tm.vgg11,
     tm.vit_b_16,
     tm.wide_resnet50_2,

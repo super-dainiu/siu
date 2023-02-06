@@ -79,6 +79,9 @@ class ShapeProp(torch.fx.Interpreter):
         is_pure_tensor = lambda elem: isinstance(elem, MetaTensor) and not isinstance(elem, torch.nn.Parameter)
         n_info = MetaInfo(n)
         n_info.outputs = _normalize_tuple(r)
+        # if n.op == 'get_attr':
+        #     print(n)
+        #     print(r)
 
         if n.op == 'call_module':
             submod = self.fetch_attr(n.target)

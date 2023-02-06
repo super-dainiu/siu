@@ -14,31 +14,31 @@ def _check_gm_validity(gm: torch.fx.GraphModule):
 
 
 @pytest.mark.parametrize('m', tm_models)
-def test_torchvision_profile(m):
+def test_torchvision_profile(m, verbose=False, bias_addition_split=False):
     with MetaTensorMode():
         model = m()
         data = torch.rand(8, 3, 224, 224)
     meta_args = {
         "x": data,
     }
-    gm = symbolic_trace(model, meta_args=meta_args)
-    symbolic_profile(gm, data, verbose=True)
+    gm = symbolic_trace(model, meta_args=meta_args, bias_addition_split=bias_addition_split)
+    symbolic_profile(gm, data, verbose=verbose)
     _check_gm_validity(gm)
 
 
 @pytest.mark.parametrize('m', tmm_models)
-def test_timm_profile(m):
+def test_timm_profile(m, verbose=False, bias_addition_split=False):
     with MetaTensorMode():
         model = m()
         data = torch.rand(8, 3, 224, 224)
     meta_args = {
         "x": data,
     }
-    gm = symbolic_trace(model, meta_args=meta_args)
-    symbolic_profile(gm, data, verbose=True)
+    gm = symbolic_trace(model, meta_args=meta_args, bias_addition_split=bias_addition_split)
+    symbolic_profile(gm, data, verbose=verbose)
     _check_gm_validity(gm)
 
 
 if __name__ == "__main__":
-    test_torchvision_profile(tm.resnet18)
+    test_torchvision_profile(tm.mobilenet_v2, verbose=True, bias_addition_split=False)
     # test_timm_profile(tmm.dm_nfnet_f0)

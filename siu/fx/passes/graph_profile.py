@@ -33,14 +33,20 @@ class sim_env(saved_tensors_hooks):
         ctx (Dict[int, torch.Tensor]): A dictionary that maps the
             data pointer of a tensor to the tensor itself. This is used
             to track the memory allocation and deallocation.
+
+        param_ctx (Dict[int, torch.Tensor]): A dictionary that maps the
+            data pointer of all model parameters to the parameter itself.
+            This avoids overestimating the memory usage of the intermediate activations.
     """
 
-    def __init__(self):
+    def __init__(self, module: Optional[torch.nn.Module] = None):
         super().__init__(self.pack_hook, self.unpack_hook)
         self.ctx = {}
+        self.param_ctx = {param.data_ptr(): param for param in module.parameters()} if module else {}
+        self.buffer_ctx = {buffer.data_ptr(): buffer for buffer in module.buffers()} if module else {}
 
     def pack_hook(self, tensor: torch.Tensor):
-        if not isinstance(tensor, torch.nn.Parameter):
+        if tensor.data_ptr() not in self.param_ctx and tensor.data_ptr() not in self.buffer_ctx:
             self.ctx[tensor.data_ptr()] = tensor
         return tensor
 
@@ -85,7 +91,7 @@ class GraphProfile(torch.fx.Interpreter):
         decorator. The method should take (*args, **kwargs) instance as its
         input and generate output.
 
-        For example, if you want to add a shape propagation rule for
+        For example, if you want to add a node profile rule for
         ``all_reduce``, you can do so by adding a new method
         to this class with the ``@register_profile_impl`` decorator:
 
@@ -102,7 +108,7 @@ class GraphProfile(torch.fx.Interpreter):
 
     def __init__(self, module: GraphModule, garbage_collect_values: bool = True):
         super().__init__(module, garbage_collect_values)
-        self.global_hook = sim_env()
+        self.global_hook = sim_env(module=self.module)
 
     def run(self, *args, initial_env: Optional[Dict[Node, Any]] = None, enable_io_processing: bool = True) -> Any:
         """
@@ -160,7 +166,7 @@ class GraphProfile(torch.fx.Interpreter):
 
         if n.op in self._profileable:
             try:
-                inner_hook = sim_env()
+                inner_hook = sim_env(module=self.module)
                 with inner_hook, self.global_hook:
                     (
                         n_info.fwd_flop,
@@ -299,14 +305,17 @@ class GraphProfile(torch.fx.Interpreter):
 
         # Build up a list of summary information for each node
         node_summaries: List[List[Any]] = []
+        last_n_info = None
 
         for node in self.module.graph.nodes:
             node: Node
             n_info = MetaInfo(node)
+            last_n_info = last_n_info or n_info
             node_summaries.append([
                 node.op,
                 str(node),
-                _format_memory(n_info.total_size),
+                _format_memory(n_info.accumulate_size),
+                _format_memory(n_info.accumulate_size - last_n_info.accumulate_size),
                 _format_memory(n_info.output_size),
                 _format_memory(n_info.temp_size),
                 _format_memory(n_info.param_size),
@@ -314,13 +323,15 @@ class GraphProfile(torch.fx.Interpreter):
                 _format_flops(n_info.fwd_flop),
                 _format_flops(n_info.bwd_flop),
             ])
+            last_n_info = n_info
 
         # Use the ``tabulate`` library to create a well-formatted table
         # presenting our summary information
         headers: List[str] = [
             'Op type',
             'Op',
-            'Total size',
+            'Accumulate size',
+            'Incremental size',
             'Output size',
             'Temp size',
             'Param size',

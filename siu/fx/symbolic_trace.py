@@ -333,7 +333,7 @@ class ColoTracer(Tracer):
         self.concrete_args = concrete_args
         self.meta_args = meta_args
 
-        with _TorchTensorOverride(self), self._tracer_override():
+        with _TorchTensorOverride(self), self._tracer_override(), torch.no_grad():
             self.mod_dir = 'self'
             self.graph = super().trace(root, concrete_args=concrete_args)
             self.mod_dir = ''
@@ -440,8 +440,6 @@ def symbolic_trace(
     trace_act_ckpt: bool = False,
     bias_addition_split: bool = False,
 ) -> ColoGraphModule:
-    is_training = root.training
-    root.eval()
     if meta_args:
         device, orig_device = _default_device(), _current_device(root)
         wrap_fn = lambda elem: MetaTensor(elem, device=device) if isinstance(elem, torch.Tensor) else elem
@@ -455,7 +453,6 @@ def symbolic_trace(
     else:
         graph = Tracer().trace(root, concrete_args=concrete_args)
     name = root.__class__.__name__ if isinstance(root, torch.nn.Module) else root.__name__
-    root.train(is_training)
     return ColoGraphModule(root, graph, name)
 
 

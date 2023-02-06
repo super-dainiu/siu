@@ -11,9 +11,11 @@ from ._monkey_patch import _AliasATen, _DistCommMethod, _InplaceATen, _TorchOver
 __all__ = ['MetaTensor', 'MetaTensorMode']
 
 
-def register_storage(r):
+def register_storage(r, data_ptr_fn=None):
     if isinstance(r, torch.Tensor):
-        if not r.data_ptr():
+        if data_ptr_fn is not None:
+            r.data_ptr = data_ptr_fn
+        elif not r.data_ptr():
             data_ptr = uuid.uuid1()
             r.data_ptr = lambda: data_ptr
 
@@ -39,7 +41,8 @@ class MetaTensor(torch.Tensor):
     _tensor: torch.Tensor
 
     @staticmethod
-    def __new__(cls, elem, device=None):
+    def __new__(cls, elem, device=None, data_ptr_fn=None):
+        requires_grad = elem.requires_grad
         # Avoid multiple wrapping
         while isinstance(elem, MetaTensor):
             device = elem.device if device is None else device
@@ -56,13 +59,14 @@ class MetaTensor(torch.Tensor):
             dtype=elem.dtype,
             layout=elem.layout,
             device=device or (elem.device if elem.device.type != 'meta' else torch.device('cpu')),
-            requires_grad=elem.requires_grad)    # deceive the frontend for aten selections
+            requires_grad=requires_grad)    # deceive the frontend for aten selections
         r._tensor = elem
         # ...the real tensor is held as an element on the tensor.
         if not r._tensor.is_meta:
             r._tensor = r._tensor.to(torch.device('meta'))
+
         # only tensor not on `meta` should be copied to `meta`
-        register_storage(r._tensor)
+        register_storage(r._tensor, data_ptr_fn)
         if isinstance(elem, torch.nn.Parameter):
             r = torch.nn.Parameter(r)
         return r
