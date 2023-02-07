@@ -13,6 +13,7 @@ from siu.fx.node_util import MetaInfo
 
 
 def _format_flops(flops: float) -> str:
+    """Returns a formatted FLOP size string"""
     if flops > 1e12:
         return f'{flops / 1e12:.2f} TFLOPs'
     elif flops > 1e9:
