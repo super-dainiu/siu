@@ -145,25 +145,39 @@ class ColoProxy(Proxy):
     def __isinstancecheck__(self, type):
         return isinstance(self.meta_data, type)
 
+    def size(self, dim=None):
+        if self._meta_data is None:
+            return self._meta_data.size(*[dim] if dim else [])
+        return self.tracer.create_proxy('call_method', 'size', (self, dim) if dim else (self,), {})
+
+    def dim(self):
+        if self._meta_data is not None:
+            return self._meta_data.dim()
+        return self.tracer.create_proxy('call_method', 'dim', (self,), {})
+
     @property
     def shape(self):
-        return self.meta_data.shape
+        if self._meta_data is not None:
+            return self._meta_data.shape
+        return self.tracer.create_proxy('call_function', getattr, (self, 'shape'), {})
 
     @property
     def ndim(self):
-        return self.meta_data.ndim
+        if self._meta_data is not None:
+            return self._meta_data.ndim
+        return self.tracer.create_proxy('call_function', getattr, (self, 'ndim'), {})
 
     @property
     def device(self):
-        proxy = self.tracer.create_proxy('call_function', getattr, (self, 'device'), {})
-        proxy.meta_data = self.meta_data.device
-        return proxy
+        if self._meta_data is not None:
+            return self._meta_data.device
+        return self.tracer.create_proxy('call_function', getattr, (self, 'device'), {})
 
     @property
     def dtype(self):
-        proxy = self.tracer.create_proxy('call_function', getattr, (self, 'dtype'), {})
-        proxy.meta_data = self.meta_data.dtype
-        return proxy
+        if self._meta_data is not None:
+            return self._meta_data.dtype
+        return self.tracer.create_proxy('call_function', getattr, (self, 'dtype'), {})
 
     def to(self, *args, **kwargs):
         return self.tracer.create_proxy('call_method', 'to', (self, *args), {**kwargs})
@@ -333,7 +347,7 @@ class ColoTracer(Tracer):
         self.concrete_args = concrete_args
         self.meta_args = meta_args
 
-        with _TorchTensorOverride(self), self._tracer_override(), torch.no_grad():
+        with self._torch_factory_override(), self._tracer_override(), torch.no_grad():
             self.mod_dir = 'self'
             self.graph = super().trace(root, concrete_args=concrete_args)
             self.mod_dir = ''
@@ -342,6 +356,7 @@ class ColoTracer(Tracer):
 
     @contextmanager
     def _tracer_override(self):
+        # override the tracer to support custom modules and checkpointing
         if self.trace_act_ckpt:
             orig_ckpt_func_apply = torch.utils.checkpoint.CheckpointFunction.apply
             orig_ckpt_func_without_reentrant = torch.utils.checkpoint._checkpoint_without_reentrant
@@ -371,6 +386,44 @@ class ColoTracer(Tracer):
             torch.utils.checkpoint._checkpoint_reentrant = orig_ckpt_func_without_reentrant
 
         ColoProxy._func_dispatch = {}
+
+    @contextmanager
+    def _torch_factory_override(self):
+        # override the torch factory functions to create a proxy when the method
+        # is called during ``symbolic_trace()``.
+        def wrap_factory_method(target):
+
+            @functools.wraps(target)
+            def wrapper(*args, **kwargs):
+                is_proxy = any(isinstance(p, ColoProxy) for p in args) | any(
+                    isinstance(p, ColoProxy) for p in kwargs.values())
+                if is_proxy:
+                    # if the arg is a proxy, then need to record this function called on this proxy
+                    # e.g. torch.ones(size) where size is an input proxy
+                    self.disable_module_getattr = True
+                    try:
+                        proxy = self.create_proxy('call_function', target, args, kwargs)
+                    finally:
+                        self.disable_module_getattr = False
+                    return proxy
+                else:
+                    return target(*args, **kwargs)
+
+            return wrapper, target
+
+        overrides = {
+            target: wrap_factory_method(getattr(torch, target))
+            for target in _TorchFactoryMethod
+            if callable(getattr(torch, target))
+        }
+        for name, (wrapper, orig) in overrides.items():
+            setattr(torch, name, wrapper)
+
+        yield
+
+        # recover the torch factory functions upon exit
+        for name, (wrapper, orig) in overrides.items():
+            setattr(torch, name, orig)
 
     def _post_check(self, non_concrete_arg_names: Set[str]):
         # This is necessary because concrete args are added as input to the traced module since
@@ -454,48 +507,3 @@ def symbolic_trace(
         graph = Tracer().trace(root, concrete_args=concrete_args)
     name = root.__class__.__name__ if isinstance(root, torch.nn.Module) else root.__name__
     return ColoGraphModule(root, graph, name)
-
-
-class _TorchTensorOverride(object):
-    """
-    Override ``torch.Tensor`` methods to create a proxy when the method
-    is called during ``symbolic_trace()``.
-    """
-
-    def __init__(self, tracer: Tracer):
-        self.overrides = {}
-        self.tracer = tracer
-
-    def __enter__(self):
-
-        def wrap_tensor_method(target):
-
-            @functools.wraps(target)
-            def wrapper(*args, **kwargs):
-                is_proxy = any(isinstance(p, ColoProxy) for p in args) | any(
-                    isinstance(p, ColoProxy) for p in kwargs.values())
-                if is_proxy:
-                    # if the arg is a proxy, then need to record this function called on this proxy
-                    # e.g. torch.ones(size) where size is an input proxy
-                    self.tracer.disable_module_getattr = True
-                    try:
-                        proxy = self.tracer.create_proxy('call_function', target, args, kwargs)
-                    finally:
-                        self.tracer.disable_module_getattr = False
-                    return proxy
-                else:
-                    return target(*args, **kwargs)
-
-            return wrapper, target
-
-        self.overrides = {
-            target: wrap_tensor_method(getattr(torch, target))
-            for target in _TorchFactoryMethod
-            if callable(getattr(torch, target))
-        }
-        for name, (wrapper, orig) in self.overrides.items():
-            setattr(torch, name, wrapper)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        for name, (wrapper, orig) in self.overrides.items():
-            setattr(torch, name, orig)

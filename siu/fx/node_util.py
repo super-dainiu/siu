@@ -66,7 +66,7 @@ class MetaInfo:
                             -------------------------------    [input] for the next node.
     ============================================================================
 
-    Accumulate Size = ALL_PREVIOUS_CTX U {([interm] in local_ctx)  + Output Size}
+    Accumulate Size = ALL_PREVIOUS_CTX U {Interm Size + Output Size}
     Output Size = ([output] in global_ctx and not is_alias)
     Temp Size = ([output] not in global_ctx and not is_alias)
     Backward Size = ([grad_inp])
@@ -75,7 +75,7 @@ class MetaInfo:
         >>> for node in graph.nodes:
         >>>     n_info = MetaInfo(node)     # will create a new MetaInfo instance and store in node.meta['info']
         >>>                                 # if not exist, otherwise return the existing one
-        >>>     n_info.data = ...   # set the data field
+        >>>     n_info.to_recompute = ...   # set the to_recompute attribute
 
     Remarks:
         This feature is experimental and all the entries are subject to change.
@@ -90,7 +90,6 @@ class MetaInfo:
     # ctx[data_ptr] = Tensor
     # mark the storage for ctx.save_for_backward
     global_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # globally shared
-    local_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # within node
     curr_ctx: Dict[str, torch.Tensor] = field(default_factory=lambda: {})    # global_ctx till this node
 
     # should be updated after each graph manipulation

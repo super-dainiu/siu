@@ -41,4 +41,4 @@ def test_timm_profile(m, verbose=False, bias_addition_split=False):
 
 if __name__ == "__main__":
     test_torchvision_profile(tm.mobilenet_v2, verbose=True, bias_addition_split=False)
-    # test_timm_profile(tmm.dm_nfnet_f0)
+    test_timm_profile(tmm.gmlp_b16_224, verbose=True, bias_addition_split=False)

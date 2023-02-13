@@ -1,3 +1,4 @@
+import timm.models as tmm
 import torch
 import torchvision.models as tm
 from colossalai.fx.passes import ConcreteInfoProp, MetaInfoProp
@@ -18,7 +19,7 @@ def extract_forward_mem(gm: torch.fx.GraphModule):
     return node_size, param_size
 
 
-mod = tm.mobilenet_v2()
+mod = tmm.gmixer_12_224()
 data = torch.rand(8, 3, 224, 224)
 meta_args = {
     "x": data,
@@ -26,30 +27,29 @@ meta_args = {
 gm = symbolic_trace(mod, meta_args=meta_args)
 interp = MetaInfoProp(gm)
 interp.propagate(data)
+# print(gm.code)
 # print(interp.summary())
 activation_size, param_size = extract_forward_mem(gm)
-print(f"activation_size: {_format_memory(activation_size)}")
+# print(f"activation_size: {_format_memory(activation_size)}")
 
-from make_fx import make_fx
+    # from make_fx import make_fx
 
+    # class Mod(torch.nn.Module):
 
-class Mod(torch.nn.Module):
+    #     def __init__(self):
+    #         super().__init__()
+    #         self.silu = torch.nn.SiLU(inplace=True)
 
-    def __init__(self):
-        super().__init__()
-        self.silu = torch.nn.SiLU(inplace=True)
+    #     def forward(self, x):
+    #         x = x + 0
+    #         x = self.silu(x)
+    #         return x
 
-    def forward(self, x):
-        x = x + 0
-        x = self.silu(x)
-        return x
+    # env = sim_env()
+    # with env:
+    #     graph = make_fx(Mod(), torch.rand(8, 3, 224, 224, requires_grad=True).cuda())
+    #     print(graph.python_code('self').src)
+    #     print(len(env.ctx.keys()))
 
-
-env = sim_env()
-with env:
-    graph = make_fx(Mod(), torch.rand(8, 3, 224, 224, requires_grad=True).cuda())
-    print(graph.python_code('self').src)
-    print(len(env.ctx.keys()))
-
-graph = make_fx(torch.nn.SiLU(inplace=False), torch.rand(8, 3, 224, 224, requires_grad=True).cuda())
-print(graph.python_code('self').src)
+    # graph = make_fx(torch.nn.SiLU(inplace=False), torch.rand(8, 3, 224, 224, requires_grad=True).cuda())
+    # print(graph.python_code('self').src)

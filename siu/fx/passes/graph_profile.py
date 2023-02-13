@@ -43,7 +43,7 @@ class sim_env(saved_tensors_hooks):
     def __init__(self, module: Optional[torch.nn.Module] = None):
         super().__init__(self.pack_hook, self.unpack_hook)
         self.ctx = {}
-        self.param_ctx = {param.data_ptr(): param for param in module.parameters()} if module else {}
+        self.param_ctx = {param.data_ptr(): param for param in module.parameters()}
         self.buffer_ctx = {buffer.data_ptr(): buffer for buffer in module.buffers()} if module else {}
 
     def pack_hook(self, tensor: torch.Tensor):
@@ -167,15 +167,13 @@ class GraphProfile(torch.fx.Interpreter):
 
         if n.op in self._profileable:
             try:
-                inner_hook = sim_env(module=self.module)
-                with inner_hook, self.global_hook:
+                with self.global_hook:
                     (
                         n_info.fwd_flop,
                         n_info.bwd_flop,
                         n_info.fwd_comm,
                         n_info.bwd_comm,
                     ) = getattr(self, n.op)(n.target, args, kwargs)
-                n_info.local_ctx = inner_hook.ctx
             except Exception as e:
                 raise RuntimeError(
                     f'Error {str(e)} occurred when profiling node {n}, node.target = {n.target}. '\

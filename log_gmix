@@ -1,0 +1,323 @@
+      Op type                            Op    Accumulate size    Incremental size    Output size    Temp size    Param size    Backward size      Fwd FLOPs      Bwd FLOPs
+-------------  ----------------------------  -----------------  ------------------  -------------  -----------  ------------  ---------------  -------------  -------------
+  placeholder                             x            4.59 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module                     stem_proj            6.89 Mb             2.30 Mb        2.30 Mb          0 b       1.13 Mb          4.59 Mb  462.42 MFLOPs  462.42 MFLOPs
+  call_method                       flatten            6.89 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                     transpose            6.89 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module                     stem_norm            6.89 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module                blocks_0_norm1            9.20 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                   transpose_1            9.20 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_0_mlp_tokens_fc1            9.20 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                         chunk           13.70 Mb             4.50 Mb        4.50 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                       getitem           11.45 Mb            -2.25 Mb        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                     getitem_1           11.45 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_0_mlp_tokens_act           13.70 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                           mul           18.20 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_0_mlp_tokens_drop1           18.20 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_0_mlp_tokens_fc2           18.20 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_0_mlp_tokens_drop2           18.20 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                   transpose_2           18.20 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_0_drop_path           18.20 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                           add           20.50 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_0_norm2           20.51 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_0_mlp_channels_fc1           40.81 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                       chunk_1           49.99 Mb             9.19 Mb        9.19 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                     getitem_2           45.40 Mb            -4.59 Mb        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                     getitem_3           45.40 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_0_mlp_channels_act           49.99 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                         mul_1           59.18 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_0_mlp_channels_drop1           59.18 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_0_mlp_channels_fc2           59.18 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_0_mlp_channels_drop2           59.18 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_0_drop_path_1           59.18 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_1           61.48 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_1_norm1           63.79 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                   transpose_3           63.79 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_1_mlp_tokens_fc1           63.79 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                       chunk_2           66.04 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                     getitem_4           66.04 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                     getitem_5           63.79 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_1_mlp_tokens_act           66.04 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                         mul_2           70.54 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_1_mlp_tokens_drop1           70.54 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_1_mlp_tokens_fc2           70.54 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_1_mlp_tokens_drop2           70.54 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                   transpose_4           70.54 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_1_drop_path           70.54 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_2           72.83 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_1_norm2           72.84 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_1_mlp_channels_fc1           93.14 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                       chunk_3           97.74 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                     getitem_6           97.74 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                     getitem_7           93.14 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_1_mlp_channels_act           97.74 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                         mul_3          106.92 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_1_mlp_channels_drop1          106.92 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_1_mlp_channels_fc2          106.92 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_1_mlp_channels_drop2          106.92 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_1_drop_path_1          106.92 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_3          109.22 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_2_norm1          111.53 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                   transpose_5          111.53 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_2_mlp_tokens_fc1          111.53 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                       chunk_4          113.78 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                     getitem_8          113.78 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                     getitem_9          111.53 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_2_mlp_tokens_act          113.78 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                         mul_4          118.28 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_2_mlp_tokens_drop1          118.28 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_2_mlp_tokens_fc2          118.28 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_2_mlp_tokens_drop2          118.28 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                   transpose_6          118.28 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_2_drop_path          118.28 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_4          120.58 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_2_norm2          120.59 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_2_mlp_channels_fc1          140.88 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                       chunk_5          145.48 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_10          145.48 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_11          140.88 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_2_mlp_channels_act          145.48 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                         mul_5          154.67 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_2_mlp_channels_drop1          154.67 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_2_mlp_channels_fc2          154.67 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_2_mlp_channels_drop2          154.67 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_2_drop_path_1          154.67 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_5          156.96 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_3_norm1          159.27 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                   transpose_7          159.27 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_3_mlp_tokens_fc1          159.27 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                       chunk_6          161.52 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_12          161.52 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_13          159.27 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_3_mlp_tokens_act          161.52 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                         mul_6          166.02 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_3_mlp_tokens_drop1          166.02 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_3_mlp_tokens_fc2          166.02 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_3_mlp_tokens_drop2          166.02 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                   transpose_8          166.02 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_3_drop_path          166.02 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_6          168.32 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_3_norm2          168.33 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_3_mlp_channels_fc1          188.63 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                       chunk_7          193.22 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_14          193.22 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_15          188.63 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_3_mlp_channels_act          193.22 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                         mul_7          202.41 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_3_mlp_channels_drop1          202.41 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_3_mlp_channels_fc2          202.41 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_3_mlp_channels_drop2          202.41 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_3_drop_path_1          202.41 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_7          204.71 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_4_norm1          207.01 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                   transpose_9          207.01 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_4_mlp_tokens_fc1          207.01 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                       chunk_8          209.26 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_16          209.26 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_17          207.01 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_4_mlp_tokens_act          209.26 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                         mul_8          213.76 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_4_mlp_tokens_drop1          213.76 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_4_mlp_tokens_fc2          213.76 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_4_mlp_tokens_drop2          213.76 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_10          213.76 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_4_drop_path          213.76 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_8          216.06 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_4_norm2          216.07 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_4_mlp_channels_fc1          236.37 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                       chunk_9          240.96 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_18          240.96 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_19          236.37 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_4_mlp_channels_act          240.96 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                         mul_9          250.15 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_4_mlp_channels_drop1          250.15 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_4_mlp_channels_fc2          250.15 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_4_mlp_channels_drop2          250.15 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_4_drop_path_1          250.15 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                         add_9          252.45 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_5_norm1          254.76 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_11          254.76 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_5_mlp_tokens_fc1          254.76 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_10          257.01 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_20          257.01 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_21          254.76 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_5_mlp_tokens_act          257.01 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_10          261.51 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_5_mlp_tokens_drop1          261.51 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_5_mlp_tokens_fc2          261.51 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_5_mlp_tokens_drop2          261.51 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_12          261.51 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_5_drop_path          261.51 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_10          263.80 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_5_norm2          263.82 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_5_mlp_channels_fc1          284.11 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_11          288.71 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_22          288.71 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_23          284.11 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_5_mlp_channels_act          288.71 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_11          297.89 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_5_mlp_channels_drop1          297.89 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_5_mlp_channels_fc2          297.89 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_5_mlp_channels_drop2          297.89 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_5_drop_path_1          297.89 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_11          300.19 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_6_norm1          302.50 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_13          302.50 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_6_mlp_tokens_fc1          302.50 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_12          304.75 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_24          304.75 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_25          302.50 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_6_mlp_tokens_act          304.75 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_12          309.25 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_6_mlp_tokens_drop1          309.25 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_6_mlp_tokens_fc2          309.25 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_6_mlp_tokens_drop2          309.25 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_14          309.25 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_6_drop_path          309.25 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_12          311.55 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_6_norm2          311.56 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_6_mlp_channels_fc1          331.85 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_13          336.45 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_26          336.45 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_27          331.85 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_6_mlp_channels_act          336.45 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_13          345.64 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_6_mlp_channels_drop1          345.64 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_6_mlp_channels_fc2          345.64 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_6_mlp_channels_drop2          345.64 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_6_drop_path_1          345.64 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_13          347.93 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_7_norm1          350.24 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_15          350.24 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_7_mlp_tokens_fc1          350.24 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_14          352.49 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_28          352.49 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_29          350.24 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_7_mlp_tokens_act          352.49 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_14          356.99 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_7_mlp_tokens_drop1          356.99 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_7_mlp_tokens_fc2          356.99 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_7_mlp_tokens_drop2          356.99 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_16          356.99 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_7_drop_path          356.99 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_14          359.29 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_7_norm2          359.30 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_7_mlp_channels_fc1          379.60 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_15          384.19 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_30          384.19 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_31          379.60 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_7_mlp_channels_act          384.19 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_15          393.38 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_7_mlp_channels_drop1          393.38 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_7_mlp_channels_fc2          393.38 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_7_mlp_channels_drop2          393.38 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_7_drop_path_1          393.38 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_15          395.68 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_8_norm1          397.98 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_17          397.98 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_8_mlp_tokens_fc1          397.98 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_16          400.23 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_32          400.23 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_33          397.98 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_8_mlp_tokens_act          400.23 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_16          404.73 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_8_mlp_tokens_drop1          404.73 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_8_mlp_tokens_fc2          404.73 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_8_mlp_tokens_drop2          404.73 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_18          404.73 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_8_drop_path          404.73 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_16          407.03 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_8_norm2          407.04 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_8_mlp_channels_fc1          427.34 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_17          431.93 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_34          431.93 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_35          427.34 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_8_mlp_channels_act          431.93 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_17          441.12 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_8_mlp_channels_drop1          441.12 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_8_mlp_channels_fc2          441.12 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_8_mlp_channels_drop2          441.12 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_8_drop_path_1          441.12 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_17          443.42 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_9_norm1          445.73 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_19          445.73 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_9_mlp_tokens_fc1          445.73 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_18          447.98 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_36          447.98 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_37          445.73 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module       blocks_9_mlp_tokens_act          447.98 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_18          452.48 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module     blocks_9_mlp_tokens_drop1          452.48 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_9_mlp_tokens_fc2          452.48 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module     blocks_9_mlp_tokens_drop2          452.48 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_20          452.48 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_9_drop_path          452.48 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_18          454.77 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                blocks_9_norm2          454.79 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module     blocks_9_mlp_channels_fc1          475.08 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_19          479.68 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_38          479.68 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_39          475.08 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module     blocks_9_mlp_channels_act          479.68 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_19          488.86 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module   blocks_9_mlp_channels_drop1          488.86 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module     blocks_9_mlp_channels_fc2          488.86 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module   blocks_9_mlp_channels_drop2          488.86 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_9_drop_path_1          488.86 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_19          491.16 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module               blocks_10_norm1          493.47 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_21          493.47 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module      blocks_10_mlp_tokens_fc1          493.47 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_20          495.72 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_40          495.72 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_41          493.47 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_10_mlp_tokens_act          495.72 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_20          500.22 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module    blocks_10_mlp_tokens_drop1          500.22 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module      blocks_10_mlp_tokens_fc2          500.22 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module    blocks_10_mlp_tokens_drop2          500.22 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_22          500.22 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module           blocks_10_drop_path          500.22 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_20          502.52 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module               blocks_10_norm2          502.53 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module    blocks_10_mlp_channels_fc1          522.83 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_21          527.42 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_42          527.42 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_43          522.83 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module    blocks_10_mlp_channels_act          527.42 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_21          536.61 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module  blocks_10_mlp_channels_drop1          536.61 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module    blocks_10_mlp_channels_fc2          536.61 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module  blocks_10_mlp_channels_drop2          536.61 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module         blocks_10_drop_path_1          536.61 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_21          538.90 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module               blocks_11_norm1          541.21 Mb             2.31 Mb        2.30 Mb          0 b       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                  transpose_23          541.21 Mb                 0 b        2.30 Mb          0 b           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module      blocks_11_mlp_tokens_fc1          541.21 Mb                 0 b            0 b      4.50 Mb     295.50 Kb          2.30 Mb  231.21 MFLOPs  463.60 MFLOPs
+  call_method                      chunk_22          543.46 Mb             2.25 Mb        2.25 Mb          0 b           0 b          4.50 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_44          543.46 Mb                 0 b        2.25 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_45          541.21 Mb            -2.25 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_11_mlp_tokens_act          543.46 Mb             2.25 Mb        2.25 Mb          0 b           0 b          2.25 Mb  589.82 kFLOPs  589.82 kFLOPs
+call_function                        mul_22          547.96 Mb             4.50 Mb        2.25 Mb          0 b           0 b          4.50 Mb  589.82 kFLOPs    1.18 MFLOPs
+  call_module    blocks_11_mlp_tokens_drop1          547.96 Mb                 0 b        2.25 Mb          0 b           0 b          2.25 Mb        0 FLOPs        0 FLOPs
+  call_module      blocks_11_mlp_tokens_fc2          547.96 Mb                 0 b            0 b      2.30 Mb     147.77 Kb          2.25 Mb  115.61 MFLOPs  231.81 MFLOPs
+  call_module    blocks_11_mlp_tokens_drop2          547.96 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_method                  transpose_24          547.96 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module           blocks_11_drop_path          547.96 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_22          550.26 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module               blocks_11_norm2          550.27 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_module    blocks_11_mlp_channels_fc1          570.57 Mb            20.30 Mb            0 b      9.19 Mb       2.26 Mb          2.30 Mb  927.25 MFLOPs    1.86 GFLOPs
+  call_method                      chunk_23          575.16 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                    getitem_46          575.16 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                    getitem_47          570.57 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module    blocks_11_mlp_channels_act          575.16 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+call_function                        mul_23          584.35 Mb             9.19 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs    2.41 MFLOPs
+  call_module  blocks_11_mlp_channels_drop1          584.35 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module    blocks_11_mlp_channels_fc2          584.35 Mb                 0 b            0 b      2.30 Mb       1.13 Mb          4.59 Mb  462.42 MFLOPs  925.45 MFLOPs
+  call_module  blocks_11_mlp_channels_drop2          584.35 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+  call_module         blocks_11_drop_path_1          584.35 Mb                 0 b            0 b      2.30 Mb           0 b          2.30 Mb        0 FLOPs        0 FLOPs
+call_function                        add_23          586.65 Mb             2.30 Mb        2.30 Mb          0 b           0 b          4.59 Mb  602.11 kFLOPs        0 FLOPs
+  call_module                          norm          586.66 Mb            12.25 Kb            0 b      2.30 Mb       3.00 Kb          2.30 Mb    3.01 MFLOPs    3.01 MFLOPs
+  call_method                          mean          586.67 Mb            12.00 Kb       12.00 Kb          0 b           0 b          2.30 Mb  602.11 kFLOPs  602.11 kFLOPs
+  call_module                          head          586.67 Mb                 0 b            0 b     31.25 Kb       1.47 Mb         12.00 Kb    3.07 MFLOPs    6.15 MFLOPs
+       output                        output          586.67 Mb                 0 b            0 b     31.25 Kb           0 b         31.25 Kb        0 FLOPs        0 FLOPs

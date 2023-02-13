@@ -6,7 +6,7 @@ import torch
 from torch.autograd.profiler_util import _format_memory
 from zoo import tm_models, tmm_models
 
-from siu._subclasses import MetaTensor
+from siu._subclasses import MetaTensor, MetaTensorMode
 from siu.fx import symbolic_profile, symbolic_trace
 from siu.fx.node_util import compute_size_in_bytes
 from siu.fx.passes.graph_profile import sim_env
@@ -75,6 +75,9 @@ def main(args):
                                                 lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device),
                                                 args.num_steps,
                                                 verbose=args.verbose)
+        if args.meta_mode:
+            with MetaTensorMode():
+                mod = m()
         sym_activation_mem, sym_param_mem = symbolic_run_forward(
             mod,
             lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device),
@@ -106,6 +109,9 @@ def main(args):
                                                 lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device),
                                                 args.num_steps,
                                                 verbose=args.verbose)
+        if args.meta_mode:
+            with MetaTensorMode():
+                mod = m()
         sym_activation_mem, sym_param_mem = symbolic_run_forward(
             mod,
             lambda device: torch.rand(args.batch_size, 3, 224, 224, device=device),
@@ -160,9 +166,10 @@ def plot_result(hist, img_dir=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--img_dir', type=str, default='.', help='saved image directory')
-    parser.add_argument('--batch_size', type=int, default=8, help='batch size')
+    parser.add_argument('--batch_size', type=int, default=128, help='batch size')
     parser.add_argument('--num_steps', type=int, default=5, help='number of steps')
     parser.add_argument('--verbose', action='store_true', help='verbose')
+    parser.add_argument('--meta_mode', action='store_true', help='meta mode')
     parser.add_argument('--bias_addition_split', action='store_true', help='split bias addition')
     args = parser.parse_args()
     main(args)

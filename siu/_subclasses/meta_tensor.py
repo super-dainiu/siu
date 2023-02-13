@@ -6,7 +6,7 @@ import torch.distributed as dist
 from torch.types import _bool, _device, _dtype
 from torch.utils._pytree import tree_flatten, tree_map
 
-from ._monkey_patch import _AliasATen, _DistCommMethod, _InplaceATen, _TorchOverrideableFactoryMethod
+from ._monkey_patch import _AliasATen, _DistCommMethod, _InplaceATen, _MaybeInplaceAten, _TorchOverrideableFactoryMethod
 
 __all__ = ['MetaTensor', 'MetaTensorMode']
 
@@ -20,9 +20,16 @@ def register_storage(r, data_ptr_fn=None):
             r.data_ptr = lambda: data_ptr
 
 
+def _normalize_tuple(x):
+    if not isinstance(x, tuple):
+        return (x,)
+    return x
+
+
 # a hack of inplace execution in PyTorch
 def _assert_alias(func):
-    return func in _AliasATen + _InplaceATen
+    return func in (_AliasATen + _InplaceATen + _MaybeInplaceAten    # TODO: check if should be this aggressive
+                   )
 
 
 class MetaTensor(torch.Tensor):
@@ -63,6 +70,8 @@ class MetaTensor(torch.Tensor):
         r._tensor = elem
         # ...the real tensor is held as an element on the tensor.
         if not r._tensor.is_meta:
+            val = elem.data_ptr()
+            data_ptr_fn = lambda: val
             r._tensor = r._tensor.to(torch.device('meta'))
 
         # only tensor not on `meta` should be copied to `meta`
@@ -103,7 +112,9 @@ class MetaTensor(torch.Tensor):
         # of the input tensor
         ret = func(*args, **kwargs)
         if _assert_alias(func):
-            ret.data_ptr = args[0].data_ptr
+            for r in _normalize_tuple(ret):
+                if isinstance(r, torch.Tensor):
+                    r.data_ptr = args[0].data_ptr
 
         # Now, we want to continue propagating this tensor, so we rewrap Tensors in
         # our custom tensor subclass

@@ -1,0 +1,553 @@
+      Op type                          Op    Accumulate size    Incremental size    Output size    Temp size    Param size    Backward size      Fwd FLOPs      Bwd FLOPs
+-------------  --------------------------  -----------------  ------------------  -------------  -----------  ------------  ---------------  -------------  -------------
+  placeholder                           x            4.59 Mb                 0 b        4.59 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            patch_embed_proj            4.59 Mb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs  924.84 MFLOPs
+  call_method                     flatten            4.59 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   transpose            4.59 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module            patch_embed_norm            4.59 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+     get_attr                   pos_embed            4.59 Mb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                         add            9.19 Mb             4.59 Mb        4.59 Mb          0 b     588.00 Kb          4.59 Mb    1.20 MFLOPs    1.20 MFLOPs
+  call_module                    pos_drop            9.19 Mb                 0 b        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+     get_attr                   cls_token            4.59 Mb            -4.59 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      expand            4.59 Mb                 0 b            0 b     24.00 Kb       3.00 Kb              0 b        0 FLOPs    6.14 kFLOPs
+  call_module              blocks_0_norm1            9.20 Mb             4.61 Mb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_0_attn_qk_weight            9.20 Mb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_1            9.20 Mb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant0            9.20 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                          to            9.20 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_0_attn_qk           49.79 Mb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                     reshape           49.79 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                     permute           49.79 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                     getitem           49.79 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_1           49.79 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_1           49.79 Mb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_0_attn_pos_proj           53.31 Mb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                   permute_1           53.31 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                 transpose_1           53.31 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      matmul           62.50 Mb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                         mul           62.50 Mb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                     softmax          100.01 Mb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_1          118.77 Mb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_0_attn_gating_param          100.01 Mb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        view          100.01 Mb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                     sigmoid          100.01 Mb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                         sub          100.01 Mb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       mul_1          118.77 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                   sigmoid_1          118.77 Mb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       mul_2          137.53 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                       add_1          156.29 Mb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_1          137.53 Mb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                   unsqueeze          137.63 Mb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                     truediv          156.38 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_0_attn_attn_drop          156.38 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_0_attn_v          178.98 Mb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                   reshape_1          178.98 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   permute_2          178.98 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_1          202.33 Mb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                 transpose_2          202.33 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   reshape_2          206.92 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_0_attn_proj          206.92 Mb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_0_attn_proj_drop          206.92 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_0_drop_path          206.92 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                       add_2          211.52 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_0_norm2          211.53 Mb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_0_mlp_fc1          306.50 Mb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_0_mlp_act          324.87 Mb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_0_mlp_drop1          324.87 Mb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_0_mlp_fc2          324.87 Mb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_0_mlp_drop2          324.87 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_0_drop_path_1          324.87 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                       add_3          329.47 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_1_norm1          329.48 Mb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_1_attn_qk_weight          329.48 Mb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_2          329.48 Mb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant1          329.48 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_1          329.48 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_1_attn_qk          370.07 Mb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                   reshape_3          370.07 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                   permute_3          370.07 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_2          370.07 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_3          370.07 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_2          370.07 Mb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_1_attn_pos_proj          373.59 Mb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                   permute_4          373.59 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                 transpose_3          373.59 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_2          382.78 Mb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                       mul_3          382.78 Mb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_2          420.29 Mb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_3          439.05 Mb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_1_attn_gating_param          420.29 Mb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_1          420.29 Mb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                   sigmoid_2          420.29 Mb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_1          420.29 Mb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       mul_4          439.05 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                   sigmoid_3          439.05 Mb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       mul_5          457.81 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                       add_4          476.56 Mb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_2          457.81 Mb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_1          457.90 Mb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_1          476.66 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_1_attn_attn_drop          476.66 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_1_attn_v          499.25 Mb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                   reshape_4          499.25 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   permute_5          499.25 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_3          522.61 Mb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                 transpose_4          522.61 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   reshape_5          527.20 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_1_attn_proj          527.20 Mb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_1_attn_proj_drop          527.20 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_1_drop_path          527.20 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                       add_5          531.79 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_1_norm2          531.81 Mb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_1_mlp_fc1          626.77 Mb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_1_mlp_act          645.15 Mb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_1_mlp_drop1          645.15 Mb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_1_mlp_fc2          645.15 Mb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_1_mlp_drop2          645.15 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_1_drop_path_1          645.15 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                       add_6          649.74 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_2_norm1          649.75 Mb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_2_attn_qk_weight          649.75 Mb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_3          649.75 Mb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant2          649.75 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_2          649.75 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_2_attn_qk          690.35 Mb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                   reshape_6          690.35 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                   permute_6          690.35 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_4          690.35 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_5          690.35 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_3          690.35 Mb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_2_attn_pos_proj          693.87 Mb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                   permute_7          693.87 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                 transpose_5          693.87 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_4          703.05 Mb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                       mul_6          703.05 Mb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_4          740.57 Mb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_5          759.33 Mb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_2_attn_gating_param          740.57 Mb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_2          740.57 Mb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                   sigmoid_4          740.57 Mb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_2          740.57 Mb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       mul_7          759.33 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                   sigmoid_5          759.33 Mb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       mul_8          778.08 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                       add_7          796.84 Mb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_3          778.08 Mb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_2          778.18 Mb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_2          796.94 Mb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_2_attn_attn_drop          796.94 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_2_attn_v          819.53 Mb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                   reshape_7          819.53 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   permute_8          819.53 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_5          842.88 Mb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                 transpose_6          842.88 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                   reshape_8          847.48 Mb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_2_attn_proj          847.48 Mb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_2_attn_proj_drop          847.48 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_2_drop_path          847.48 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                       add_8          852.07 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_2_norm2          852.08 Mb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_2_mlp_fc1          947.05 Mb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_2_mlp_act          965.43 Mb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_2_mlp_drop1          965.43 Mb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_2_mlp_fc2          965.43 Mb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_2_mlp_drop2          965.43 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_2_drop_path_1          965.43 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                       add_9          970.02 Mb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_3_norm1          970.03 Mb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_3_attn_qk_weight          970.03 Mb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_4          970.03 Mb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant3          970.03 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_3          970.03 Mb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_3_attn_qk         1010.63 Mb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                   reshape_9         1010.63 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                   permute_9         1010.63 Mb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_6         1010.63 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_7         1010.63 Mb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_4         1010.63 Mb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_3_attn_pos_proj         1014.14 Mb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_10         1014.14 Mb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                 transpose_7         1014.14 Mb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_6         1023.33 Mb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                       mul_9         1023.33 Mb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_6            1.04 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_7            1.05 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_3_attn_gating_param            1.04 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_3            1.04 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                   sigmoid_6            1.04 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_3            1.04 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_10            1.05 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                   sigmoid_7            1.05 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_11            1.07 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_10            1.09 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_4            1.07 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_3            1.07 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_3            1.09 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_3_attn_attn_drop            1.09 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_3_attn_v            1.11 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_10            1.11 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_11            1.11 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_7            1.14 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                 transpose_8            1.14 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_11            1.14 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_3_attn_proj            1.14 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_3_attn_proj_drop            1.14 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_3_drop_path            1.14 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_11            1.14 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_3_norm2            1.14 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_3_mlp_fc1            1.24 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_3_mlp_act            1.26 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_3_mlp_drop1            1.26 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_3_mlp_fc2            1.26 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_3_mlp_drop2            1.26 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_3_drop_path_1            1.26 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_12            1.26 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_4_norm1            1.26 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_4_attn_qk_weight            1.26 Gb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_5            1.26 Gb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant4            1.26 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_4            1.26 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_4_attn_qk            1.30 Gb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                  reshape_12            1.30 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_12            1.30 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_8            1.30 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                   getitem_9            1.30 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_5            1.30 Gb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_4_attn_pos_proj            1.30 Gb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_13            1.30 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                 transpose_9            1.30 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_8            1.31 Gb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                      mul_12            1.31 Gb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_8            1.35 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                   softmax_9            1.37 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_4_attn_gating_param            1.35 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_4            1.35 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                   sigmoid_8            1.35 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_4            1.35 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_13            1.37 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                   sigmoid_9            1.37 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_14            1.39 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_13            1.40 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_5            1.39 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_4            1.39 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_4            1.40 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_4_attn_attn_drop            1.40 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_4_attn_v            1.43 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_13            1.43 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_14            1.43 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                    matmul_9            1.45 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                transpose_10            1.45 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_14            1.45 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_4_attn_proj            1.45 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_4_attn_proj_drop            1.45 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_4_drop_path            1.45 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_14            1.46 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_4_norm2            1.46 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_4_mlp_fc1            1.55 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_4_mlp_act            1.57 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_4_mlp_drop1            1.57 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_4_mlp_fc2            1.57 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_4_mlp_drop2            1.57 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_4_drop_path_1            1.57 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_15            1.57 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_5_norm1            1.57 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_5_attn_qk_weight            1.57 Gb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_6            1.57 Gb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant5            1.57 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_5            1.57 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_5_attn_qk            1.61 Gb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                  reshape_15            1.61 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_15            1.61 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_10            1.61 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_11            1.61 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_6            1.61 Gb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_5_attn_pos_proj            1.62 Gb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_16            1.62 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                transpose_11            1.62 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_10            1.62 Gb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                      mul_15            1.62 Gb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_10            1.66 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_11            1.68 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_5_attn_gating_param            1.66 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_5            1.66 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                  sigmoid_10            1.66 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_5            1.66 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_16            1.68 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                  sigmoid_11            1.68 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_17            1.70 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_16            1.72 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_6            1.70 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_5            1.70 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_5            1.72 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_5_attn_attn_drop            1.72 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_5_attn_v            1.74 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_16            1.74 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_17            1.74 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_11            1.76 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                transpose_12            1.76 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_17            1.77 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_5_attn_proj            1.77 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_5_attn_proj_drop            1.77 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_5_drop_path            1.77 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_17            1.77 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_5_norm2            1.77 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_5_mlp_fc1            1.86 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_5_mlp_act            1.88 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_5_mlp_drop1            1.88 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_5_mlp_fc2            1.88 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_5_mlp_drop2            1.88 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_5_drop_path_1            1.88 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_18            1.89 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_6_norm1            1.89 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_6_attn_qk_weight            1.89 Gb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_7            1.89 Gb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant6            1.89 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_6            1.89 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_6_attn_qk            1.93 Gb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                  reshape_18            1.93 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_18            1.93 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_12            1.93 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_13            1.93 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_7            1.93 Gb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_6_attn_pos_proj            1.93 Gb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_19            1.93 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                transpose_13            1.93 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_12            1.94 Gb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                      mul_18            1.94 Gb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_12            1.97 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_13            1.99 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_6_attn_gating_param            1.97 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_6            1.97 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                  sigmoid_12            1.97 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_6            1.97 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_19            1.99 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                  sigmoid_13            1.99 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_20            2.01 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_19            2.03 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_7            2.01 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_6            2.01 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_6            2.03 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_6_attn_attn_drop            2.03 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_6_attn_v            2.05 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_19            2.05 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_20            2.05 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_13            2.07 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                transpose_14            2.07 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_20            2.08 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_6_attn_proj            2.08 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_6_attn_proj_drop            2.08 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_6_drop_path            2.08 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_20            2.08 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_6_norm2            2.08 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_6_mlp_fc1            2.18 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_6_mlp_act            2.19 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_6_mlp_drop1            2.19 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_6_mlp_fc2            2.19 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_6_mlp_drop2            2.19 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_6_drop_path_1            2.19 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_21            2.20 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_7_norm1            2.20 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_7_attn_qk_weight            2.20 Gb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_8            2.20 Gb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant7            2.20 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_7            2.20 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_7_attn_qk            2.24 Gb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                  reshape_21            2.24 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_21            2.24 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_14            2.24 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_15            2.24 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_8            2.24 Gb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_7_attn_pos_proj            2.24 Gb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_22            2.24 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                transpose_15            2.24 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_14            2.25 Gb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                      mul_21            2.25 Gb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_14            2.29 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_15            2.31 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_7_attn_gating_param            2.29 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_7            2.29 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                  sigmoid_14            2.29 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_7            2.29 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_22            2.31 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                  sigmoid_15            2.31 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_23            2.32 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_22            2.34 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_8            2.32 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_7            2.32 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_7            2.34 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_7_attn_attn_drop            2.34 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_7_attn_v            2.36 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_22            2.36 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_23            2.36 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_15            2.39 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                transpose_16            2.39 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_23            2.39 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_7_attn_proj            2.39 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_7_attn_proj_drop            2.39 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_7_drop_path            2.39 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_23            2.40 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_7_norm2            2.40 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_7_mlp_fc1            2.49 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_7_mlp_act            2.51 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_7_mlp_drop1            2.51 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_7_mlp_fc2            2.51 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_7_mlp_drop2            2.51 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_7_drop_path_1            2.51 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_24            2.51 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_8_norm1            2.51 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_8_attn_qk_weight            2.51 Gb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                   getattr_9            2.51 Gb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant8            2.51 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_8            2.51 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_8_attn_qk            2.55 Gb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                  reshape_24            2.55 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_24            2.55 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_16            2.55 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_17            2.55 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                    expand_9            2.55 Gb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_8_attn_pos_proj            2.55 Gb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_25            2.55 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                transpose_17            2.55 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_16            2.56 Gb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                      mul_24            2.56 Gb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_16            2.60 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_17            2.62 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_8_attn_gating_param            2.60 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_8            2.60 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                  sigmoid_16            2.60 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_8            2.60 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_25            2.62 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                  sigmoid_17            2.62 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_26            2.64 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_25            2.65 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                       sum_9            2.64 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_8            2.64 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_8            2.65 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_8_attn_attn_drop            2.65 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_8_attn_v            2.68 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_25            2.68 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_26            2.68 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_17            2.70 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                transpose_18            2.70 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_26            2.70 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_8_attn_proj            2.70 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_8_attn_proj_drop            2.70 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_8_drop_path            2.70 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_26            2.71 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_8_norm2            2.71 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_8_mlp_fc1            2.80 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_8_mlp_act            2.82 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_8_mlp_drop1            2.82 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_8_mlp_fc2            2.82 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_8_mlp_drop2            2.82 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_8_drop_path_1            2.82 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_27            2.82 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_9_norm1            2.82 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+     get_attr     blocks_9_attn_qk_weight            2.82 Gb                 0 b            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                  getattr_10            2.82 Gb                 0 b            0 b          0 b       4.50 Mb              0 b        0 FLOPs        0 FLOPs
+     get_attr           _tensor_constant9            2.82 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                        to_9            2.82 Gb                 0 b            0 b    450.19 Kb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module            blocks_9_attn_qk            2.86 Gb            40.59 Mb            0 b      9.19 Mb       4.50 Mb          4.59 Mb    1.85 GFLOPs    3.71 GFLOPs
+  call_method                  reshape_27            2.86 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_27            2.86 Gb                 0 b            0 b      9.19 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_18            2.86 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_19            2.86 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb        0 FLOPs        0 FLOPs
+  call_method                   expand_10            2.86 Gb                 0 b            0 b      3.52 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module      blocks_9_attn_pos_proj            2.87 Gb             3.52 Mb            0 b     18.76 Mb         256 b              0 b   19.67 MFLOPs   19.67 MFLOPs
+  call_method                  permute_28            2.87 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_method                transpose_19            2.87 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_18            2.88 Gb             9.19 Mb            0 b     18.76 Mb           0 b          9.19 Mb  236.03 MFLOPs  472.06 MFLOPs
+call_function                      mul_27            2.88 Gb                 8 b            0 b     18.76 Mb           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_18            2.91 Gb            37.52 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+  call_method                  softmax_19            2.93 Gb            18.76 Mb       18.76 Mb          0 b           0 b         18.76 Mb    4.92 MFLOPs    4.92 MFLOPs
+     get_attr  blocks_9_attn_gating_param            2.91 Gb           -18.76 Mb            0 b          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                      view_9            2.91 Gb                 0 b            0 b         64 b          64 b              0 b        0 FLOPs        0 FLOPs
+call_function                  sigmoid_18            2.91 Gb                64 b            0 b         64 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                       sub_9            2.91 Gb                64 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_28            2.93 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                  sigmoid_19            2.93 Gb               128 b           64 b          0 b           0 b             64 b       16 FLOPs       16 FLOPs
+call_function                      mul_29            2.95 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.76 Mb       16 FLOPs   14.75 MFLOPs
+call_function                      add_28            2.97 Gb            18.76 Mb       18.76 Mb          0 b           0 b         37.52 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                      sum_10            2.95 Gb           -18.76 Mb            0 b     98.00 Kb           0 b         18.76 Mb    4.92 MFLOPs        0 FLOPs
+  call_method                 unsqueeze_9            2.95 Gb            98.00 Kb       98.00 Kb          0 b           0 b         98.00 Kb        0 FLOPs        0 FLOPs
+call_function                   truediv_9            2.97 Gb            18.76 Mb            0 b     18.76 Mb           0 b         18.85 Mb    4.92 MFLOPs   29.50 MFLOPs
+  call_module     blocks_9_attn_attn_drop            2.97 Gb                 0 b            0 b     18.76 Mb           0 b         18.76 Mb        0 FLOPs        0 FLOPs
+  call_module             blocks_9_attn_v            2.99 Gb            22.59 Mb            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_method                  reshape_28            2.99 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_29            2.99 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_19            3.01 Gb            23.35 Mb            0 b      4.59 Mb           0 b         23.35 Mb  236.03 MFLOPs  472.06 MFLOPs
+  call_method                transpose_20            3.01 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_29            3.02 Gb             4.59 Mb        4.59 Mb          0 b           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_9_attn_proj            3.02 Gb                 0 b            0 b      4.59 Mb       2.25 Mb          4.59 Mb  924.84 MFLOPs    1.85 GFLOPs
+  call_module     blocks_9_attn_proj_drop            3.02 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module          blocks_9_drop_path            3.02 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_29            3.02 Gb             4.59 Mb        4.59 Mb          0 b           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+  call_module              blocks_9_norm2            3.02 Gb            12.25 Kb            0 b      4.59 Mb       6.00 Kb          4.59 Mb    6.02 MFLOPs    6.02 MFLOPs
+  call_module            blocks_9_mlp_fc1            3.11 Gb            94.97 Mb       18.38 Mb          0 b       9.01 Mb          4.59 Mb    3.70 GFLOPs    7.42 GFLOPs
+  call_module            blocks_9_mlp_act            3.13 Gb            18.38 Mb       18.38 Mb          0 b           0 b         18.38 Mb    4.82 MFLOPs    4.82 MFLOPs
+  call_module          blocks_9_mlp_drop1            3.13 Gb                 0 b       18.38 Mb          0 b           0 b         18.38 Mb        0 FLOPs        0 FLOPs
+  call_module            blocks_9_mlp_fc2            3.13 Gb                 0 b            0 b      4.59 Mb       9.00 Mb         18.38 Mb    3.70 GFLOPs    7.40 GFLOPs
+  call_module          blocks_9_mlp_drop2            3.13 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+  call_module        blocks_9_drop_path_1            3.13 Gb                 0 b            0 b      4.59 Mb           0 b          4.59 Mb        0 FLOPs        0 FLOPs
+call_function                      add_30            3.13 Gb                 0 b            0 b      4.59 Mb           0 b          9.19 Mb    1.20 MFLOPs        0 FLOPs
+call_function                         cat            3.14 Gb             4.62 Mb        4.62 Mb          0 b           0 b              0 b        0 FLOPs        0 FLOPs
+  call_module             blocks_10_norm1            3.14 Gb             4.63 Mb        4.62 Mb          0 b       6.00 Kb          4.62 Mb    6.05 MFLOPs    6.05 MFLOPs
+  call_module          blocks_10_attn_qkv            3.14 Gb                 0 b            0 b     13.85 Mb       6.75 Mb          4.62 Mb    2.79 GFLOPs    5.58 GFLOPs
+  call_method                  reshape_30            3.14 Gb                 0 b            0 b     13.85 Mb           0 b         13.85 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_30            3.14 Gb                 0 b            0 b     13.85 Mb           0 b         13.85 Mb        0 FLOPs        0 FLOPs
+  call_method                      unbind            3.14 Gb                 0 b            0 b     13.85 Mb           0 b         13.85 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_20            3.14 Gb                 0 b            0 b      4.62 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                  getitem_21            3.14 Gb                 0 b            0 b      4.62 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                  getitem_22            3.14 Gb                 0 b            0 b      4.62 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                transpose_21            3.14 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_20            3.15 Gb             9.23 Mb            0 b     18.95 Mb           0 b          9.23 Mb  238.44 MFLOPs  476.88 MFLOPs
+call_function                      mul_30            3.15 Gb                 8 b            0 b     18.95 Mb           0 b         18.95 Mb    4.97 MFLOPs    4.97 MFLOPs
+  call_method                  softmax_20            3.17 Gb            18.95 Mb            0 b     18.95 Mb           0 b         18.95 Mb    4.97 MFLOPs    4.97 MFLOPs
+  call_module    blocks_10_attn_attn_drop            3.17 Gb                 0 b            0 b     18.95 Mb           0 b         18.95 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_21            3.19 Gb            23.57 Mb            0 b      4.62 Mb           0 b         23.57 Mb  238.44 MFLOPs  476.88 MFLOPs
+  call_method                transpose_22            3.19 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_31            3.20 Gb             4.62 Mb        4.62 Mb          0 b           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module         blocks_10_attn_proj            3.20 Gb                 0 b            0 b      4.62 Mb       2.25 Mb          4.62 Mb  929.56 MFLOPs    1.86 GFLOPs
+  call_module    blocks_10_attn_proj_drop            3.20 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module         blocks_10_drop_path            3.20 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+call_function                      add_31            3.20 Gb             4.62 Mb        4.62 Mb          0 b           0 b          9.23 Mb    1.21 MFLOPs        0 FLOPs
+  call_module             blocks_10_norm2            3.21 Gb             4.63 Mb        4.62 Mb          0 b       6.00 Kb          4.62 Mb    6.05 MFLOPs    6.05 MFLOPs
+  call_module           blocks_10_mlp_fc1            3.22 Gb            18.47 Mb       18.47 Mb          0 b       9.01 Mb          4.62 Mb    3.72 GFLOPs    7.44 GFLOPs
+  call_module           blocks_10_mlp_act            3.24 Gb            18.47 Mb       18.47 Mb          0 b           0 b         18.47 Mb    4.84 MFLOPs    4.84 MFLOPs
+  call_module         blocks_10_mlp_drop1            3.24 Gb                 0 b       18.47 Mb          0 b           0 b         18.47 Mb        0 FLOPs        0 FLOPs
+  call_module           blocks_10_mlp_fc2            3.24 Gb                 0 b            0 b      4.62 Mb       9.00 Mb         18.47 Mb    3.72 GFLOPs    7.44 GFLOPs
+  call_module         blocks_10_mlp_drop2            3.24 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_10_drop_path_1            3.24 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+call_function                      add_32            3.25 Gb             4.62 Mb        4.62 Mb          0 b           0 b          9.23 Mb    1.21 MFLOPs        0 FLOPs
+  call_module             blocks_11_norm1            3.25 Gb             4.63 Mb        4.62 Mb          0 b       6.00 Kb          4.62 Mb    6.05 MFLOPs    6.05 MFLOPs
+  call_module          blocks_11_attn_qkv            3.25 Gb                 0 b            0 b     13.85 Mb       6.75 Mb          4.62 Mb    2.79 GFLOPs    5.58 GFLOPs
+  call_method                  reshape_32            3.25 Gb                 0 b            0 b     13.85 Mb           0 b         13.85 Mb        0 FLOPs        0 FLOPs
+  call_method                  permute_31            3.25 Gb                 0 b            0 b     13.85 Mb           0 b         13.85 Mb        0 FLOPs        0 FLOPs
+  call_method                    unbind_1            3.25 Gb                 0 b            0 b     13.85 Mb           0 b         13.85 Mb        0 FLOPs        0 FLOPs
+call_function                  getitem_23            3.25 Gb                 0 b            0 b      4.62 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                  getitem_24            3.25 Gb                 0 b            0 b      4.62 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+call_function                  getitem_25            3.25 Gb                 0 b            0 b      4.62 Mb           0 b              0 b        0 FLOPs        0 FLOPs
+  call_method                transpose_23            3.25 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_22            3.26 Gb             9.23 Mb            0 b     18.95 Mb           0 b          9.23 Mb  238.44 MFLOPs  476.88 MFLOPs
+call_function                      mul_31            3.26 Gb                 8 b            0 b     18.95 Mb           0 b         18.95 Mb    4.97 MFLOPs    4.97 MFLOPs
+  call_method                  softmax_21            3.28 Gb            18.95 Mb            0 b     18.95 Mb           0 b         18.95 Mb    4.97 MFLOPs    4.97 MFLOPs
+  call_module    blocks_11_attn_attn_drop            3.28 Gb                 0 b            0 b     18.95 Mb           0 b         18.95 Mb        0 FLOPs        0 FLOPs
+call_function                   matmul_23            3.30 Gb            23.57 Mb            0 b      4.62 Mb           0 b         23.57 Mb  238.44 MFLOPs  476.88 MFLOPs
+  call_method                transpose_24            3.30 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_method                  reshape_33            3.31 Gb             4.62 Mb        4.62 Mb          0 b           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module         blocks_11_attn_proj            3.31 Gb                 0 b            0 b      4.62 Mb       2.25 Mb          4.62 Mb  929.56 MFLOPs    1.86 GFLOPs
+  call_module    blocks_11_attn_proj_drop            3.31 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module         blocks_11_drop_path            3.31 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+call_function                      add_33            3.31 Gb             4.62 Mb        4.62 Mb          0 b           0 b          9.23 Mb    1.21 MFLOPs        0 FLOPs
+  call_module             blocks_11_norm2            3.31 Gb             4.63 Mb        4.62 Mb          0 b       6.00 Kb          4.62 Mb    6.05 MFLOPs    6.05 MFLOPs
+  call_module           blocks_11_mlp_fc1            3.33 Gb            18.47 Mb       18.47 Mb          0 b       9.01 Mb          4.62 Mb    3.72 GFLOPs    7.44 GFLOPs
+  call_module           blocks_11_mlp_act            3.35 Gb            18.47 Mb       18.47 Mb          0 b           0 b         18.47 Mb    4.84 MFLOPs    4.84 MFLOPs
+  call_module         blocks_11_mlp_drop1            3.35 Gb                 0 b       18.47 Mb          0 b           0 b         18.47 Mb        0 FLOPs        0 FLOPs
+  call_module           blocks_11_mlp_fc2            3.35 Gb                 0 b            0 b      4.62 Mb       9.00 Mb         18.47 Mb    3.72 GFLOPs    7.44 GFLOPs
+  call_module         blocks_11_mlp_drop2            3.35 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module       blocks_11_drop_path_1            3.35 Gb                 0 b            0 b      4.62 Mb           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+call_function                      add_34            3.36 Gb             4.62 Mb        4.62 Mb          0 b           0 b          9.23 Mb    1.21 MFLOPs        0 FLOPs
+  call_module                        norm            3.36 Gb            12.31 Kb            0 b      4.62 Mb       6.00 Kb          4.62 Mb    6.05 MFLOPs    6.05 MFLOPs
+call_function                  getitem_26            3.36 Gb            24.00 Kb       24.00 Kb          0 b           0 b          4.62 Mb        0 FLOPs        0 FLOPs
+  call_module                        head            3.36 Gb                 0 b            0 b     31.25 Kb       2.93 Mb         24.00 Kb    6.14 MFLOPs   12.30 MFLOPs
+       output                      output            3.36 Gb                 0 b            0 b     31.25 Kb           0 b         31.25 Kb        0 FLOPs        0 FLOPs

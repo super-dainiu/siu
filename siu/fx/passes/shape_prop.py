@@ -79,24 +79,21 @@ class ShapeProp(torch.fx.Interpreter):
         is_pure_tensor = lambda elem: isinstance(elem, MetaTensor) and not isinstance(elem, torch.nn.Parameter)
         n_info = MetaInfo(n)
         n_info.outputs = _normalize_tuple(r)
-        # if n.op == 'get_attr':
-        #     print(n)
-        #     print(r)
 
         if n.op == 'call_module':
             submod = self.fetch_attr(n.target)
-            n_info.parameters.update({k: v.to(torch.device('meta')) for k, v in submod.named_parameters()})
-            n_info.buffers.update({k: v.to(torch.device('meta')) for k, v in submod.named_buffers()})
+            n_info.parameters.update({k: MetaTensor(v) for k, v in submod.named_parameters()})
+            n_info.buffers.update({k: MetaTensor(v) for k, v in submod.named_buffers()})
 
         else:
             n_info.parameters.update(
-                {k.name: v.to(torch.device('meta')) \
+                {k.name: MetaTensor(v) \
                     for k, v in zip(n.args, args) \
                         if isinstance(k, torch.fx.Node) and isinstance(v, torch.nn.Parameter)
                 }
             )
             n_info.parameters.update(
-                {k: v.to(torch.device('meta')) \
+                {k: MetaTensor(v) \
                     for k, v in kwargs.items() \
                         if isinstance(v, torch.nn.Parameter)
                 }

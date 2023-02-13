@@ -4,8 +4,14 @@ import torch.distributed as dist
 aten = torch.ops.aten
 
 __all__ = [
-    "_TorchFactoryMethod", "_TorchOverrideableFactoryMethod", "_TorchNonOverrideableFactoryMethod",
-    "_TensorPropertyMethod", "_DistCommMethod", "_AliasATen", "_InplaceATen"
+    "_TorchFactoryMethod",
+    "_TorchOverrideableFactoryMethod",
+    "_TorchNonOverrideableFactoryMethod",
+    "_TensorPropertyMethod",
+    "_DistCommMethod",
+    "_AliasATen",
+    "_InplaceATen",
+    "_MaybeInplaceAten",
 ]
 
 _TorchOverrideableFactoryMethod = [
@@ -64,4 +70,11 @@ _InplaceATen = [
     aten.div_.Scalar,
     aten.pow_.Tensor,
     aten.pow_.Scalar,
+]
+
+_MaybeInplaceAten = [
+    aten.diagonal.default,
+    aten.select.int,
+    aten.slice.Tensor,
+    aten.as_strided.default,
 ]
