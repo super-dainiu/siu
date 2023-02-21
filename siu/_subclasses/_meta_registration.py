@@ -31,11 +31,6 @@ def new_like(*args, **kwargs):
     return orig_empty_like(*args, **kwargs, device=torch.device('meta'))
 
 
-def _as_param(r):
-    r._is_param = True    # see what makes a `torch.Tensor` an `nn.Parameter`
-    return r
-
-
 def register_meta(op, register_dispatcher=True):
 
     def wrapper(f):

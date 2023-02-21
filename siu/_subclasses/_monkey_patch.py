@@ -11,7 +11,7 @@ __all__ = [
     "_DistCommMethod",
     "_AliasATen",
     "_InplaceATen",
-    "_MaybeInplaceAten",
+    "_MaybeInplaceATen",
 ]
 
 _TorchOverrideableFactoryMethod = [
@@ -49,6 +49,8 @@ _DistCommMethod = [
     "scatter",
 ]
 
+# TODO: dive deep here
+# refer to https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/TensorShape.cpp
 _AliasATen = [
     aten.detach.default,
     aten.detach_.default,
@@ -72,9 +74,15 @@ _InplaceATen = [
     aten.pow_.Scalar,
 ]
 
-_MaybeInplaceAten = [
+# use `MaybeInplace` because they call ``as_strided()`` or ``slice()``
+_MaybeInplaceATen = [
     aten.diagonal.default,
+    aten.expand.default,
     aten.select.int,
     aten.slice.Tensor,
+    aten.split.Tensor,
+    aten.squeeze.default,
+    aten.permute.default,
+    aten.unsqueeze.default,
     aten.as_strided.default,
 ]

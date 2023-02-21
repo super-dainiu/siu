@@ -2,13 +2,11 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import torch
 import torch.fx
-from torch.autograd.graph import saved_tensors_hooks
 from torch.autograd.profiler_util import _format_memory, _format_time
 from torch.fx import GraphModule
 from torch.fx.node import Argument, Node, Target
-from torch.utils._pytree import tree_map
 
-from siu._subclasses import MetaTensor, flop_count
+from siu._subclasses import flop_count
 from siu.fx.node_util import MetaInfo
 
 
@@ -25,36 +23,6 @@ def _format_flops(flops: float) -> str:
     return f'{flops} FLOPs'
 
 
-class sim_env(saved_tensors_hooks):
-    """
-    A simulation of memory allocation and deallocation in the forward pass
-    using ``saved_tensor_hooks``.
-
-    Attributes:
-        ctx (Dict[int, torch.Tensor]): A dictionary that maps the
-            data pointer of a tensor to the tensor itself. This is used
-            to track the memory allocation and deallocation.
-
-        param_ctx (Dict[int, torch.Tensor]): A dictionary that maps the
-            data pointer of all model parameters to the parameter itself.
-            This avoids overestimating the memory usage of the intermediate activations.
-    """
-
-    def __init__(self, module: Optional[torch.nn.Module] = None):
-        super().__init__(self.pack_hook, self.unpack_hook)
-        self.ctx = {}
-        self.param_ctx = {param.data_ptr(): param for param in module.parameters()}
-        self.buffer_ctx = {buffer.data_ptr(): buffer for buffer in module.buffers()} if module else {}
-
-    def pack_hook(self, tensor: torch.Tensor):
-        if tensor.data_ptr() not in self.param_ctx and tensor.data_ptr() not in self.buffer_ctx:
-            self.ctx[tensor.data_ptr()] = tensor
-        return tensor
-
-    def unpack_hook(self, tensor):
-        return tensor
-
-
 def _denormalize_tuple(t: Tuple[int, ...]) -> Tuple[int, ...]:
     return t[0] if len(t) == 1 else t
 
@@ -69,47 +37,19 @@ def _current_device(module):
     return next(module.parameters()).device
 
 
-class GraphProfile(torch.fx.Interpreter):
+class BaseProfiler(torch.fx.Interpreter):
     """
-    Execute an FX graph Node-by-Node and record the meta data of the result
-    into the corresponding node.
-
-    Usage:
-        >>> model = MyModule()
-        >>> x = torch.rand(10, 10)
-        >>> gm = colossalai.fx.symbolic_trace(model, meta_args = {'x': x}})
-        >>> shape_interp = ShapeProp(gm)    # must do this first
-        >>> shape_interp.propagate(x)
-        >>> profile_interp = GraphProfile(gm)
-        >>> profile_interp.propagate(x)
-
-    Args:
-        module (GraphModule): The module to be executed
-
-    Hints:
-        If you want to add a new graph profile rule, you can do so by
-        adding a new method to this class with the ``@register_profile_impl``
-        decorator. The method should take (*args, **kwargs) instance as its
-        input and generate output.
-
-        For example, if you want to add a node profile rule for
-        ``all_reduce``, you can do so by adding a new method
-        to this class with the ``@register_profile_impl`` decorator:
-
-        >>> @register_profile_impl(all_reduce)
-        >>> def all_reduce_profile_impl(*args, **kwargs):
-        >>>     return 0, 0, all_reduce_cost(*args, **kwargs), 0
+    Fetch shape argument from ``ShapeProp`` without re-executing
+    the ``GraphModule`` from scratch.
     """
     _profileable = [
         'call_function',
         'call_module',
-        'call_method',    # FIXME: call_method encountered error
+        'call_method',
     ]
-    _custom_profile_impl = {}
 
     def __init__(self, module: GraphModule, garbage_collect_values: bool = True):
         super().__init__(module, garbage_collect_values)
-        self.global_hook = sim_env(module=self.module)
 
     def run(self, *args, initial_env: Optional[Dict[Node, Any]] = None, enable_io_processing: bool = True) -> Any:
         """
@@ -138,7 +78,7 @@ class GraphProfile(torch.fx.Interpreter):
 
         for node in self.module.graph.nodes:
 
-            self.env[node] = self.run_node(node)
+            self.run_node(node)    # No need to store.
 
             if self.garbage_collect_values:
                 for to_delete in self.user_to_last_uses.get(node, []):
@@ -147,111 +87,6 @@ class GraphProfile(torch.fx.Interpreter):
             if node.op == 'output':
                 output_val = self.env[node]
                 return self.module.graph.process_outputs(output_val) if enable_io_processing else output_val
-
-    def run_node(self, n: torch.fx.Node) -> Any:
-        """
-        Run a specific node ``n`` and profile its execution time and memory usage.
-        Calls into call_function, call_method, and call_module only.
-
-        Args:
-            n (Node): The Node to profile
-
-        Returns:
-            Any: The output of the node
-
-        Raises:
-            RuntimeError: If the node is not profileable.
-        """
-        args, kwargs = self.fetch_args_kwargs_from_env(n)
-        n_info = MetaInfo(n)
-
-        if n.op in self._profileable:
-            try:
-                with self.global_hook:
-                    (
-                        n_info.fwd_flop,
-                        n_info.bwd_flop,
-                        n_info.fwd_comm,
-                        n_info.bwd_comm,
-                    ) = getattr(self, n.op)(n.target, args, kwargs)
-            except Exception as e:
-                raise RuntimeError(
-                    f'Error {str(e)} occurred when profiling node {n}, node.target = {n.target}. '\
-                    f'Please refer to function\'s docstring to register the relevant profile_impl for this node!'
-                ) from e
-        n_info.global_ctx = self.global_hook.ctx
-        n_info.curr_ctx = self.global_hook.ctx.copy()
-
-        # retain the autograd graph
-        for param in self.module.parameters():
-            param.grad = None
-
-        crit = lambda x: x.data_ptr() in self.global_hook.ctx if isinstance(x, torch.Tensor) else False
-        n_info.is_alias = _normalize_tuple(tree_map(crit, n_info.outputs))
-        return _denormalize_tuple(n_info.outputs)
-
-    def call_function(self, target: 'Target', args: Tuple[Argument, ...], kwargs: Dict[str, Any]) -> Any:
-        """
-        Execute a ``call_function`` node and return the profiling result.
-        Dispatch to _custom_profile_impl`` if ``call_function`` should be
-        profiled in a user-defined behavior.
-
-        Args:
-            target (Target): The call target for this node. See
-                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
-                details on semantics
-            args (Tuple): Tuple of positional args for this invocation
-            kwargs (Dict): Dict of keyword arguments for this invocation
-
-        Return
-            Tuple(int): (fwd_flop, bwd_flop, fwd_comm, bwd_comm)
-        """
-        assert not isinstance(target, str)
-
-        # Dispatch the impl for profiling, default will be ``flop_count``
-        if target in self._custom_profile_impl:
-            return self._custom_profile_impl[target](*args, **kwargs)
-        else:
-            return *flop_count(target, *args, **kwargs), 0, 0
-
-    def call_method(self, target: 'Target', args: Tuple[Argument, ...], kwargs: Dict[str, Any]) -> Any:
-        """
-        Execute a ``call_method`` node and return the profiling result.
-
-        Args:
-            target (Target): The call target for this node. See
-                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
-                details on semantics
-            args (Tuple): Tuple of positional args for this invocation
-            kwargs (Dict): Dict of keyword arguments for this invocation
-
-        Return
-            Tuple(int): (fwd_flop, bwd_flop, fwd_comm, bwd_comm)
-        """
-        # Execute the method and return the result
-        assert isinstance(target, str)
-        return *flop_count(getattr(torch.Tensor, target), *args, **kwargs), 0, 0
-
-    def call_module(self, target: 'Target', args: Tuple[Argument, ...], kwargs: Dict[str, Any]) -> Any:
-        """
-        Execute a ``call_module`` node and return the profiling result.
-
-        Args:
-            target (Target): The call target for this node. See
-                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
-                details on semantics
-            args (Tuple): Tuple of positional args for this invocation
-            kwargs (Dict): Dict of keyword arguments for this invocation
-
-        Return
-            Tuple(int): (fwd_flop, bwd_flop, fwd_comm, bwd_comm)
-        """
-        # Retrieve executed args and kwargs values from the environment
-
-        # Execute the method and return the result
-        assert isinstance(target, str)
-        submod = self.fetch_attr(target)
-        return *flop_count(submod, *args, **kwargs), 0, 0
 
     def fetch_initial_env(self, device=None) -> Dict[Node, Any]:
         """
@@ -342,6 +177,152 @@ class GraphProfile(torch.fx.Interpreter):
         return tabulate(node_summaries, headers=headers, stralign='right')
 
 
+class CommunicationProfiler(BaseProfiler):
+    """
+    TODO(lyl): Add this for all comm nodes
+    """
+
+    def __init__(self, module: GraphModule, garbage_collect_values: bool = True):
+        raise NotImplementedError()
+
+
+class FlopProfiler(BaseProfiler):
+    """
+    Execute an FX graph Node-by-Node and record the meta data of the result
+    into the corresponding node.
+
+    Usage:
+        >>> model = MyModule()
+        >>> x = torch.rand(10, 10)
+        >>> gm = colossalai.fx.symbolic_trace(model, meta_args = {'x': x}})
+        >>> shape_interp = ShapeProp(gm)    # must do this first
+        >>> shape_interp.propagate(x)
+        >>> profiler = FlopProfiler(gm)
+        >>> profiler.propagate(x)
+
+    Args:
+        module (GraphModule): The module to be executed
+
+    Hints:
+        If you want to add a new flop count rule, you can first
+        check the existing files in ``../_subclasses/flop_tensor.py``.
+        If your flop count rules are incompatible with the existing
+        ones, you can do so by adding a new method to this class
+        with the ``@register_flop_count_impl`` decorator. The method
+        should take (*args, **kwargs) instance as its input and
+        generate flop count for both forward and backward as its
+        output.
+
+        For example, if you want to add a flop count rule for
+        ``my_fn``, which is a hand-written operand not detected by
+        PyTorch, you can do so by adding a new method to this
+        class with the ``@register_flop_count_impl`` decorator:
+
+        >>> @register_flop_count_impl(my_fn)
+        >>> def my_fn_flop_count_impl(*args, **kwargs):
+        >>>     return 0, 0
+    """
+    _custom_flop_count_impl = {}
+
+    def run_node(self, n: torch.fx.Node) -> Any:
+        """
+        Run a specific node ``n`` and profile its execution time and memory usage.
+        Calls into call_function, call_method, and call_module only.
+
+        Args:
+            n (Node): The Node to profile
+
+        Returns:
+            Any: The output of the node
+
+        Raises:
+            RuntimeError: If the node is not profileable.
+        """
+        args, kwargs = self.fetch_args_kwargs_from_env(n)
+        n_info = MetaInfo(n)
+
+        if n.op in self._profileable:
+            try:
+                (
+                    n_info.fwd_flop,
+                    n_info.bwd_flop,
+                ) = getattr(self, n.op)(n.target, args, kwargs)
+            except Exception as e:
+                raise RuntimeError(
+                    f'Error {str(e)} occurred when profiling node {n}, node.target = {n.target}. '\
+                    f'Please refer to function\'s docstring to register the relevant profile_impl for this node!'
+                ) from e
+
+        # retain the autograd graph
+        for param in self.module.parameters():
+            param.grad = None
+
+        return _denormalize_tuple(n_info.outputs)
+
+    def call_function(self, target: 'Target', args: Tuple[Argument, ...], kwargs: Dict[str, Any]) -> Any:
+        """
+        Execute a ``call_function`` node and return the profiling result.
+        Dispatch to ``_custom_flop_count_impl`` if ``call_function`` should be
+        profiled in a user-defined behavior.
+
+        Args:
+            target (Target): The call target for this node. See
+                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
+                details on semantics
+            args (Tuple): Tuple of positional args for this invocation
+            kwargs (Dict): Dict of keyword arguments for this invocation
+
+        Return
+            flop_count (Tuple[int]): (fwd_flop, bwd_flop)
+        """
+        assert not isinstance(target, str)
+
+        # Dispatch the impl for profiling, default will be ``flop_count``
+        if target in self._custom_flop_count_impl:
+            return self._custom_flop_count_impl[target](*args, **kwargs)
+        else:
+            return flop_count(target, *args, **kwargs)
+
+    def call_method(self, target: 'Target', args: Tuple[Argument, ...], kwargs: Dict[str, Any]) -> Any:
+        """
+        Execute a ``call_method`` node and return the profiling result.
+
+        Args:
+            target (Target): The call target for this node. See
+                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
+                details on semantics
+            args (Tuple): Tuple of positional args for this invocation
+            kwargs (Dict): Dict of keyword arguments for this invocation
+
+        Return
+            flop_count (Tuple[int]): (fwd_flop, bwd_flop)
+        """
+        # Execute the method and return the result
+        assert isinstance(target, str)
+        return flop_count(getattr(torch.Tensor, target), *args, **kwargs)
+
+    def call_module(self, target: 'Target', args: Tuple[Argument, ...], kwargs: Dict[str, Any]) -> Any:
+        """
+        Execute a ``call_module`` node and return the profiling result.
+
+        Args:
+            target (Target): The call target for this node. See
+                `Node <https://pytorch.org/docs/master/fx.html#torch.fx.Node>`__ for
+                details on semantics
+            args (Tuple): Tuple of positional args for this invocation
+            kwargs (Dict): Dict of keyword arguments for this invocation
+
+        Return
+            flop_count (Tuple[int]): (fwd_flop, bwd_flop)
+        """
+        # Retrieve executed args and kwargs values from the environment
+
+        # Execute the method and return the result
+        assert isinstance(target, str)
+        submod = self.fetch_attr(target)
+        return flop_count(submod, *args, **kwargs)
+
+
 def graph_profile_pass(module: GraphModule, *args, verbose=False) -> GraphModule:
     """
     Run ``module`` via interpretation and profile the execution
@@ -355,8 +336,12 @@ def graph_profile_pass(module: GraphModule, *args, verbose=False) -> GraphModule
     Returns:
         GraphModule: The same GraphModule with profiling information
     """
-    interp = GraphProfile(module)
-    interp.propagate(*args, device=_current_device(module))
+    for profiler_cls in (FlopProfiler,
+    # CommunicationProfiler,    # TODO: add communication profiling
+                        ):
+        profiler = profiler_cls(module)
+        profiler.propagate(*args, device=_current_device(module))
+
     if verbose:
-        print(interp.summary())
+        print(profiler.summary())
     return module

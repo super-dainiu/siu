@@ -21,8 +21,8 @@ VAE_ARG_LIST = [
 @pytest.mark.parametrize('m, shape, kwargs', VAE_ARG_LIST)
 def test_vae(m, shape, kwargs):
 
-    model = m()
-    sample = torch.zeros(shape)
+    model = m().cuda()
+    sample = torch.zeros(shape).cuda()
 
     gm = symbolic_trace(model, meta_args={'sample': sample}, concrete_args=kwargs)
 
@@ -44,8 +44,8 @@ UNET_ARG_LIST = [
 
 @pytest.mark.parametrize('m, shape, timestep', UNET_ARG_LIST)
 def test_unet(m, shape, timestep):
-    model = m()
-    sample = torch.zeros(shape)
+    model = m().cuda()
+    sample = torch.zeros(shape).cuda()
 
     gm = symbolic_trace(model, meta_args={'sample': sample}, concrete_args=dict(timestep=timestep))
 

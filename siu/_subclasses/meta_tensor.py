@@ -6,7 +6,7 @@ import torch.distributed as dist
 from torch.types import _bool, _device, _dtype
 from torch.utils._pytree import tree_flatten, tree_map
 
-from ._monkey_patch import _AliasATen, _DistCommMethod, _InplaceATen, _MaybeInplaceAten, _TorchOverrideableFactoryMethod
+from ._monkey_patch import _AliasATen, _DistCommMethod, _InplaceATen, _MaybeInplaceATen, _TorchOverrideableFactoryMethod
 
 __all__ = ['MetaTensor', 'MetaTensorMode']
 
@@ -28,7 +28,7 @@ def _normalize_tuple(x):
 
 # a hack of inplace execution in PyTorch
 def _assert_alias(func):
-    return func in (_AliasATen + _InplaceATen + _MaybeInplaceAten    # TODO: check if should be this aggressive
+    return func in (_AliasATen + _InplaceATen + _MaybeInplaceATen    # TODO: check if should be this aggressive
                    )
 
 
@@ -111,10 +111,10 @@ class MetaTensor(torch.Tensor):
         # here we detect whether or not the execution generates a physical copy
         # of the input tensor
         ret = func(*args, **kwargs)
+
         if _assert_alias(func):
-            for r in _normalize_tuple(ret):
-                if isinstance(r, torch.Tensor):
-                    r.data_ptr = args[0].data_ptr
+            val = args[0].data_ptr()
+            tree_map(partial(register_storage, data_ptr_fn=lambda: val), _normalize_tuple(ret))
 
         # Now, we want to continue propagating this tensor, so we rewrap Tensors in
         # our custom tensor subclass

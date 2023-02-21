@@ -129,3 +129,17 @@ def make_fx(module: torch.nn.Module, *args, device=None, **kwargs) -> Graph:
             retain_graph=True,
         )
     return graph
+
+
+if __name__ == '__main__':
+
+    class AModule(torch.nn.Module):
+
+        def forward(self, x: torch.Tensor):
+            return x.chunk(2)
+
+    import timm.models as tmm
+
+    model = tmm.gmixer_12_224()
+    graph = make_fx(model, torch.rand(1000, 3, 224, 224, requires_grad=True))
+    print(graph.python_code('self').src)
